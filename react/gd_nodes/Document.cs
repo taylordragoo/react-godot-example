@@ -8,8 +8,12 @@ namespace Spectral.React
 {
 	public partial class Document : Node
 	{
+		public static Document Instance { get; private set; }
+
 		readonly List<IDom> _children;
 		V8ScriptEngine _engine;
+		SetTimeout _timers;
+		ReactBridge _bridge;
 
 		[Export]
 		bool LiveReload = false;
@@ -26,8 +30,43 @@ namespace Spectral.React
 		public override void _Ready()
 		{
 			base._Ready();
+			if (Instance != null && Instance != this)
+			{
+				GD.PrintErr("Multiple Spectral.React.Document instances detected; overwriting Document.Instance");
+			}
+			Instance = this;
 			Setup();
 		}
+
+		public override void _ExitTree()
+		{
+			base._ExitTree();
+			if (Instance == this)
+			{
+				Instance = null;
+			}
+			try
+			{
+				_timers?.Dispose();
+			}
+			catch (Exception ex)
+			{
+				GD.PrintErr(ex);
+			}
+			_timers = null;
+			try
+			{
+				_engine?.Dispose();
+			}
+			catch (Exception ex)
+			{
+				GD.PrintErr(ex);
+			}
+			_engine = null;
+			_bridge = null;
+		}
+
+		public ReactBridge Bridge => _bridge;
 
 		public void clearChildren()
 		{
@@ -179,7 +218,8 @@ namespace Spectral.React
 				V8ScriptEngineFlags.EnableDebugging | V8ScriptEngineFlags.EnableRemoteDebugging,
 				9222
 			);
-			var _ = new SetTimeout(_engine, this);
+			_timers = new SetTimeout(_engine, this);
+			_bridge = new ReactBridge();
 
 			_engine.AddHostType("GD", typeof(GD));
 			_engine.AddHostType("Color", typeof(Color));
@@ -191,6 +231,7 @@ namespace Spectral.React
 
 			_engine.AddHostType("Document", typeof(Document));
 			_engine.AddHostObject("root", this);
+			_engine.AddHostObject("bridge", _bridge);
 
 			using var file = Godot.FileAccess.Open(
 				"res://app/dist/index.js",

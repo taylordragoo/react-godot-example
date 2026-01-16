@@ -26,11 +26,10 @@ if (fs.existsSync(APP_PATH)) {
 } else {
 	// we need to create the whole app folder!
 	copyFolderSync(path.resolve(__dirname, "..", "react_lib", "_app"), path.resolve(APP_PATH))
-	if (fs.existsSync())
-		copyFolderSync(
-			path.resolve(__dirname, "..", "react_lib", "_lib"),
-			path.resolve(APP_PATH, "react_lib")
-		)
+	copyFolderSync(
+		path.resolve(__dirname, "..", "react_lib", "_lib"),
+		path.resolve(APP_PATH, "react_lib")
+	)
 }
 
 function copyFolderSync(from, to) {

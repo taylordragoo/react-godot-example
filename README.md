@@ -23,10 +23,10 @@ This project uses `esbuild` to build the JS app, which should've been installed 
 
 ```bash
 # in the ./app directory
-$ node build
+$ node build.js
 
 # or use this to automatically rebuild on changes
-$ node build -w
+$ node build.js -w
 ```
 
 There are three different 'apps' in this sample, under `app/src/examples`. To switch between them, you have to change the import in `app/src/index.tsx` (currently `import { App } from "./examples/kitchen-sink"`) to point to the example you want to run, rebuild the JS app, and run the Godot project.
@@ -37,7 +37,7 @@ Uh. I'm not sure I recommend it??? But if you really want to:
 
 1. Copy the `react` folder into the project directory of your Godot game. You'll need Godot 4.2 or up.
 2. Install `Microsoft.ClearScript.Complete` in your project via dotnet.
-3. Go into the `react` folder and run `node scripts/bootstrap-app` from there. This will create an `app` folder where your React code should live.
+3. Go into the `react` folder and run `node scripts/bootstrap-app.mjs` from there. This will create an `app` folder where your React code should live.
 4. Run `npm install` inside of the `app` folder.
 5. Add the `ReactRoot.tscn` scene to the root of your game. (Alternatively, since it is a fairly simple scene: Create a `CanvasLayer` node at the root of your game, and attach the `react/gd_nodes/Document.cs` script to it.)
 
@@ -49,17 +49,61 @@ Then it should work? Some limitations:
 
 ## How do you send game logic back and forth between JS and C#?
 
-I haven't thought too far yet...but some initial thoughts.
+The short version: expose a small “bridge” object to JS, and treat it like an external store.
 
 Ideally, there's a one-directional flow. JS calls methods from C#, but C# shouldn't have to call anything from JS.
 
-The entry point and root node of the React app is a `Document`, which can be found at `react/gd-nodes/Document.cs`. The v8 engine is defined there, as are all the functions to create and update components.
+The entry point and root node of the React app is a `Document`, which can be found at `react/gd_nodes/Document.cs`. The V8 engine is defined there, as are all the functions to create and update components.
 
-The v8 engine is exposed from the `Document` as the `Engine` variable, and thus it's possible to add other C# objects to it to send them to Javascript. From those objects, you can directly call functions as if they were in C#.
+### Bridge
+
+`Document` now exposes a `bridge` host object to JavaScript (see `react/utils/ReactBridge.cs`). This is designed to solve two problems:
+
+- **JS → C#**: send actions/commands from UI to game logic (`bridge.dispatch(...)`).
+- **C# → JS/React**: publish game state to the UI as a JSON snapshot (`bridge.setState(...)` / `bridge.setStateJson(...)`).
+
+The JS side polls `bridge.version` each frame (via `requestAnimationFrame`) and uses `useSyncExternalStore` so React re-renders when the snapshot changes.
+
+JS helper functions live in `app/react_lib/bridge.ts` (and the template copy in `react/react_lib/_lib/bridge.ts`).
+
+### Example: JS → C#
+
+In JS:
+
+```ts
+import { dispatch } from "bridge"
+
+dispatch({ type: "set_volume", payload: { value: 0.5 } })
+```
+
+In C# (anywhere in your game code):
+
+```csharp
+Spectral.React.Document.Instance.Bridge.Dispatch += action => {
+    var type = action?.GetProperty("type") as string;
+    GD.Print($"action: {type}");
+};
+```
+
+### Example: C# → JS/React
+
+In C#:
+
+```csharp
+Spectral.React.Document.Instance.Bridge.setState(new { health = 100, ammo = 30 });
+```
+
+In JS:
+
+```ts
+import { useBridgeState } from "bridge"
+
+const health = useBridgeState((s) => s.health)
+```
 
 ### Events?
 
-There should also be a way to define `Actions` in C#, then `Invoke` them and have the results automatically be sent to JS, but I haven't quite figured that out yet `:^)`
+For “ephemeral” events (toasts, sfx triggers, etc.), C# can call `bridge.emit(type, payload)` and JS can read them with `drainEvents()`. The payload is serialized as JSON, so keep it JSON-friendly.
 
 ## Other Libraries
 
@@ -69,4 +113,3 @@ There's some code in here that aren't related to React (that isn't an npm or nug
 * `vendor/DirectoryWatcher.gd` - https://github.com/KoBeWi/Godot-Directory-Watcher - helper node written in GDScript (hooray, mixing GDScript and C#!) that is used to implement a 'live reload' function by watching when the react scripts change and reloading the Document node.
 * `addons/godot-css-theme` - https://github.com/kuma-gee/godot-css-theme - used to turn CSS into Godot theme objects, which is just handy.
 * `react/utils/SetTimeout.cs` - original version retrieved from https://github.com/microsoft/ClearScript/issues/475, with some modifications that I made to have it work. I barely understand it myself...
-

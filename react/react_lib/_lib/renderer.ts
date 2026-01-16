@@ -150,6 +150,10 @@ const CustomReconciler = Reconciler<
 	cancelTimeout: function (id: number): void {
 		clearTimeout(id)
 	},
+	supportsMicrotasks: true,
+	scheduleMicrotask: function (fn: () => unknown): void {
+		queueMicrotask(fn)
+	},
 	noTimeout: -1,
 	isPrimaryRenderer: true,
 	getCurrentEventPriority: function (): number {
