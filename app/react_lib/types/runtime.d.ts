@@ -48,3 +48,12 @@ declare interface ReactBridge {
 
 declare var bridge: ReactBridge
 
+declare interface ProgressManager {
+	readonly BallCount: number
+	readonly Progress: number
+	GetBallPositions(): number[]
+	SetProgress(value: number): void
+	ResetProgress(): void
+}
+
+declare var pman: ProgressManager

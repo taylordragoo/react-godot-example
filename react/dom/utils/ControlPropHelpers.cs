@@ -260,9 +260,19 @@ namespace Spectral.React
             ScriptObject props
         )
         {
-            await component
-                .getDocument()
-                .ToSignal(component.getDocument().GetTree(), SceneTree.SignalName.ProcessFrame);
+            if (!instance.IsInsideTree())
+            {
+                var tree = component.getDocument().GetTree();
+                if (tree == null)
+                {
+                    return;
+                }
+                await component.getDocument().ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+                if (!instance.IsInsideTree())
+                {
+                    return;
+                }
+            }
             // absolute position
             if (C.TryGetStyleProps(props, "x", out object x))
             {

@@ -10,6 +10,8 @@ namespace Spectral.React
 	{
 		public static Document Instance { get; private set; }
 
+		const string ExposedGroupName = "react_exposed";
+
 		readonly List<IDom> _children;
 		V8ScriptEngine _engine;
 		SetTimeout _timers;
@@ -232,6 +234,7 @@ namespace Spectral.React
 			_engine.AddHostType("Document", typeof(Document));
 			_engine.AddHostObject("root", this);
 			_engine.AddHostObject("bridge", _bridge);
+			ExposeGroupNodesToJS();
 
 			using var file = Godot.FileAccess.Open(
 				"res://app/dist/index.js",
@@ -252,6 +255,43 @@ namespace Spectral.React
 				);
 				GD.Print("Watching!");
 			}
+		}
+
+		void ExposeGroupNodesToJS()
+		{
+			var tree = GetTree();
+			if (tree == null)
+				return;
+
+			var nodes = tree.GetNodesInGroup(ExposedGroupName);
+			foreach (var obj in nodes)
+			{
+				if (!(obj is Node node))
+					continue;
+
+				var name = node.Name.ToString();
+				if (!IsValidJsIdentifier(name))
+				{
+					GD.PrintErr($"Skipping JS exposure for node '{name}' (invalid JS identifier).");
+					continue;
+				}
+				_engine.AddHostObject(name, node);
+			}
+		}
+
+		static bool IsValidJsIdentifier(string name)
+		{
+			if (string.IsNullOrEmpty(name))
+				return false;
+			if (!(char.IsLetter(name[0]) || name[0] == '_' || name[0] == '$'))
+				return false;
+			for (int i = 1; i < name.Length; i++)
+			{
+				var c = name[i];
+				if (!(char.IsLetterOrDigit(c) || c == '_' || c == '$'))
+					return false;
+			}
+			return true;
 		}
 
 		protected void OnLiveReload(Godot.Collections.Array files)
@@ -325,6 +365,10 @@ namespace Spectral.React
 					break;
 				case "button":
 					newNode = new ButtonNode();
+					break;
+				case "slider":
+				case "hslider":
+					newNode = new SliderNode();
 					break;
 
 				// box containers

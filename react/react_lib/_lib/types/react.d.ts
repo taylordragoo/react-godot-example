@@ -159,6 +159,15 @@ interface ButtonAttributes<T> extends ControlAttributes<T> {
 		}
 }
 
+interface SliderAttributes<T> extends ControlAttributes<T> {
+	value?: number
+	min?: number
+	max?: number
+	step?: number
+	editable?: boolean
+	onChange?: (value: number) => void
+}
+
 interface LabelAttributes<T> extends ContainerAttributes<T> {
 	rich?: bool // makes it a rich text node
 
@@ -267,6 +276,7 @@ declare namespace JSX {
 		control: React.DetailedHTMLProps<ControlAttributes<ControlElement>, ControlElement>
 		div: React.DetailedHTMLProps<PanelAttributes<ControlElement>, ControlElement>
 		button: React.DetailedHTMLProps<ButtonAttributes<ControlElement>, ControlElement>
+		slider: React.DetailedHTMLProps<SliderAttributes<ControlElement>, ControlElement>
 		label: React.DetailedHTMLProps<LabelAttributes<ControlElement>, ControlElement>
 		hbox: React.DetailedHTMLProps<BoxAttributes<ControlElement>, ControlElement>
 		vbox: React.DetailedHTMLProps<BoxAttributes<ControlElement>, ControlElement>
