@@ -1,64 +1,86 @@
 using System;
-using System.Threading.Tasks;
 using Godot;
 using Microsoft.ClearScript.V8;
 
 namespace Spectral.React
 {
     /// <summary>
-    /// A helper class that uses async / await and Task.delay
-    /// to create an implementation of setTimeout.
-    /// There is only ever *one* task that is being awaited, which is created from a Schedule call.
-    /// All setTimeout and setInterval calls are created in a queue.
-    /// If a new timeout is added, the existing task is canceled, and a new one created, and that function
-    /// added to the timeout queue in the order in which they should execute.
+    /// A helper class that implements setTimeout/setInterval for ClearScript V8
+    /// by scheduling callbacks on the Godot main thread (via SceneTreeTimer).
+    /// All timers are managed through a JS-side queue; C# only schedules the next wake-up.
     ///
-    /// The task always counts down to the first 'timeout' that the app is waiting for. When the
-    /// delay is reached, the first function in the timeout queue is executed, and then a new Schedule
-    /// is called with the time required to reach the next timeout function. And so on and so forth.
+    /// This keeps V8 calls on the main thread (important for thread-safety) while still supporting
+    /// many timers efficiently (only one active SceneTreeTimer at a time).
     /// </summary>
     // code inspired from https://github.com/microsoft/ClearScript/issues/475
-    public sealed class TimerImpl
+    public sealed class TimerImpl : IDisposable
     {
-        private System.Threading.CancellationTokenSource _token;
-        private Func<double> _callback = () => System.Threading.Timeout.Infinite;
+        readonly Node _owner;
+        Func<double> _callback = () => -1;
+        SceneTreeTimer _timer;
+        bool _disposed;
+
+        public TimerImpl(Node owner)
+        {
+            _owner = owner ?? throw new ArgumentNullException(nameof(owner));
+        }
 
         public void Initialize(dynamic callback) => _callback = () => (double)callback();
 
-        public async void Schedule(double delay)
+        public void Schedule(double delay)
         {
+            if (_disposed)
+                return;
+
+            CancelTimer();
+
             if (delay < 0)
+                return;
+
+            var tree = _owner.GetTree();
+            if (tree == null)
+                return;
+
+            _timer = tree.CreateTimer(Mathf.Max(0.0f, (float)(delay / 1000.0)));
+            _timer.Timeout += RunCallback;
+        }
+
+        void RunCallback()
+        {
+            if (_disposed)
+                return;
+
+            CancelTimer();
+
+            try
             {
-                if (_token != null)
-                {
-                    _token.Cancel();
-                    _token = null;
-                }
+                var nextDelay = _callback();
+                Schedule(nextDelay);
             }
-            else if (delay == 0)
+            catch (Exception ex)
             {
-                Schedule(_callback());
+                GD.PrintErr(ex);
             }
-            else
-            {
-                _token ??= new System.Threading.CancellationTokenSource();
-                try
-                {
-                    await Task.Delay((int)delay, _token.Token);
-                    Schedule(_callback());
-                }
-                catch (TaskCanceledException)
-                {
-                    // this is normal
-                    GD.Print("we canceled a task!");
-                }
-            }
+        }
+
+        void CancelTimer()
+        {
+            if (_timer == null)
+                return;
+            _timer.Timeout -= RunCallback;
+            _timer = null;
+        }
+
+        public void Dispose()
+        {
+            _disposed = true;
+            CancelTimer();
         }
     }
 
     public class SetTimeout
     {
-        public SetTimeout(V8ScriptEngine engine)
+        public SetTimeout(V8ScriptEngine engine, Node owner)
         {
             dynamic setup = engine.Evaluate(
                 @"(impl => {
@@ -69,8 +91,9 @@ namespace Spectral.React
         index >= 0 ? queue.splice(index, 0, entry) : queue.push(entry);
     }
     function set(periodic, func, delay) {
+        delay = +delay || 0;
         const id = getNextId(), now = Date.now(), args = [...arguments].slice(3);
-        add({ id, periodic, func: func, delay, due: now + delay });
+        add({ id, periodic, func: func, args, delay, due: now + delay });
         impl.Schedule(queue[0].due - now);
         return id;
     };
@@ -86,13 +109,13 @@ namespace Spectral.React
         while ((queue.length > 0) && (now >= queue[0].due)) {
             const entry = queue.shift();
             if (entry.periodic) add({ ...entry, due: now + entry.delay });
-            entry.func();
+            entry.func(...entry.args);
         }
         return queue.length > 0 ? queue[0].due - now : -1;
     });
 })"
             );
-            setup(new TimerImpl());
+            setup(new TimerImpl(owner));
 
             // HACK: setImmediate as a 'do this now' function
             engine.Execute(

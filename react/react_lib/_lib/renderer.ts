@@ -1,9 +1,18 @@
 import Reconciler from "react-reconciler"
+import { DefaultEventPriority } from "react-reconciler/constants"
 import type { ComponentProps } from "react"
 
 const shallowCompare = (obj1, obj2) =>
   Object.keys(obj1).length === Object.keys(obj2).length &&
   Object.keys(obj1).every(key => obj1[key] === obj2[key]);
+
+const isAllTextChildren = (children: unknown) => {
+	if (typeof children === "string" || typeof children === "number") return true
+	if (Array.isArray(children) && children.length > 0) {
+		return children.every((c) => typeof c === "string" || typeof c === "number")
+	}
+	return false
+}
 
 const CustomReconciler = Reconciler<
 	string, // type for creating components
@@ -49,8 +58,15 @@ const CustomReconciler = Reconciler<
 	removeChildFromContainer(container: Document, child: IDom) {
 		container.removeChild(child)
 	},
+	insertBefore(parentInstance: IDom, child: IDom, beforeChild: IDom) {
+		parentInstance.insertBefore(child, beforeChild)
+	},
+	insertInContainerBefore(container: Document, child: IDom, beforeChild: IDom) {
+		container.insertBefore(child, beforeChild)
+	},
 	createTextInstance(text: string, rootContainerInstance: Document, internalInstanceHandle) {
-		return null
+		// @ts-ignore
+		return Document.createElement("label", { children: text }, rootContainerInstance)
 	},
 	finalizeInitialChildren(instance, type, props, rootContainer, hostContext) {
 		return false
@@ -109,12 +125,11 @@ const CustomReconciler = Reconciler<
 		return parentHostContext
 	},
 	shouldSetTextContent(type, props): boolean {
-		// this function should only return true if you *don't* want react to create a child node for you.
-		// so...only if the props is text!
-		if (typeof props === "string") {
-			return true
-		}
-		return false
+		// Return true to prevent React from creating a TextInstance child.
+		// Only do this for host types that render their own text (e.g. Button, Label).
+		const t = String(type).toLowerCase()
+		if (t !== "button" && t !== "label") return false
+		return isAllTextChildren(props?.children)
 	},
 	commitUpdate(instance, updatePayload, type, prevProps, nextProps, internalHandle) {
 		// updatePayload is the return from prepareUpdate
@@ -125,41 +140,31 @@ const CustomReconciler = Reconciler<
 	},
 	supportsMutation: true,
 	supportsPersistence: false,
-	preparePortalMount: function (containerInfo: unknown): void {
-		throw new Error("Function not implemented.")
-	},
+	preparePortalMount: function (_containerInfo: unknown): void {},
 	scheduleTimeout: function (
 		fn: (...args: unknown[]) => unknown,
 		delay?: number | undefined
 	): number {
-		throw new Error("Function not implemented.")
+		return setTimeout(fn, delay ?? 0) as unknown as number
 	},
 	cancelTimeout: function (id: number): void {
-		throw new Error("Function not implemented.")
+		clearTimeout(id)
 	},
-	noTimeout: undefined,
-	isPrimaryRenderer: false,
+	noTimeout: -1,
+	isPrimaryRenderer: true,
 	getCurrentEventPriority: function (): number {
-		throw new Error("Function not implemented.")
+		return DefaultEventPriority
 	},
 	getInstanceFromNode: function (node: any): Reconciler.Fiber | null | undefined {
-		throw new Error("Function not implemented.")
+		return null
 	},
-	beforeActiveInstanceBlur: function (): void {
-		throw new Error("Function not implemented.")
-	},
-	afterActiveInstanceBlur: function (): void {
-		throw new Error("Function not implemented.")
-	},
-	prepareScopeUpdate: function (scopeInstance: any, instance: any): void {
-		throw new Error("Function not implemented.")
-	},
+	beforeActiveInstanceBlur: function (): void {},
+	afterActiveInstanceBlur: function (): void {},
+	prepareScopeUpdate: function (_scopeInstance: any, _instance: any): void {},
 	getInstanceFromScope: function (scopeInstance: any): IDom | null {
-		throw new Error("Function not implemented.")
+		return null
 	},
-	detachDeletedInstance: function (node: IDom): void {
-		throw new Error("Function not implemented.")
-	},
+	detachDeletedInstance: function (_node: IDom): void {},
 	supportsHydration: false,
 })
 

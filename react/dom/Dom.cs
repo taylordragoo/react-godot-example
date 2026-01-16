@@ -239,15 +239,77 @@ namespace Spectral.React
 
         public void appendChild(IDom node)
         {
+            if (node == null)
+                return;
+
+            if (_children.Contains(node))
+                _children.Remove(node);
             _children.Add(node);
-            _instance.AddChild(node.getNode());
+
+            var gdNode = node.getNode();
+            if (gdNode == null)
+                return;
+
+            var currentParent = gdNode.GetParent();
+            if (currentParent != _instance)
+            {
+                currentParent?.RemoveChild(gdNode);
+                _instance.AddChild(gdNode);
+            }
+            _instance.MoveChild(gdNode, _children.Count - 1);
+        }
+
+        public void insertBefore(IDom node, IDom beforeNode)
+        {
+            if (node == null)
+                return;
+            if (beforeNode == null)
+            {
+                appendChild(node);
+                return;
+            }
+
+            var beforeIndex = _children.IndexOf(beforeNode);
+            if (beforeIndex < 0)
+            {
+                appendChild(node);
+                return;
+            }
+
+            var existingIndex = _children.IndexOf(node);
+            if (existingIndex >= 0)
+            {
+                _children.RemoveAt(existingIndex);
+                if (existingIndex < beforeIndex)
+                    beforeIndex--;
+            }
+
+            _children.Insert(beforeIndex, node);
+
+            var gdNode = node.getNode();
+            if (gdNode == null)
+                return;
+
+            var currentParent = gdNode.GetParent();
+            if (currentParent != _instance)
+            {
+                currentParent?.RemoveChild(gdNode);
+                _instance.AddChild(gdNode);
+            }
+            _instance.MoveChild(gdNode, beforeIndex);
         }
 
         public void removeChild(IDom node)
         {
+            if (node == null)
+                return;
             _children.Remove(node);
-            _instance.RemoveChild(node.getNode());
-            node.getNode().QueueFree();
+            var gdNode = node.getNode();
+            if (gdNode != null)
+            {
+                _instance.RemoveChild(gdNode);
+                gdNode.QueueFree();
+            }
         }
 
         public Tween getTween(string property)

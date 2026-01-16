@@ -11,6 +11,7 @@ namespace Spectral.React {
 
         public void clearChildren();
         public void appendChild(IDom node);
+        public void insertBefore(IDom node, IDom beforeNode);
         public void removeChild(IDom node);
 
         // style
