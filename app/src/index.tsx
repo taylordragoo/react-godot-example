@@ -1,19 +1,12 @@
 import { render } from "renderer"
-import { App } from "./examples/example-scene"
 import React from "react"
+import { initTailwind } from "tw"
+import { FortniteSample } from "./examples/fortnite-sample"
 
-root.setStyleSheet({
-	"opacity-100": {
-		modulate: "#FFFFFFFF",
-		scaleX: 1,
-	},
-	"opacity-0": {
-		modulate: "#FFFFFF00",
-		scaleX: 0,
-	},
-	"opacity-50": {
-		modulate: "#FFFFFF80",
+initTailwind(root, {
+	rpgawesome: {
+		font: "res://assets/@fortnite-sample/rpgawesome.ttf",
 	},
 })
 
-render(<App />)
+render(<FortniteSample />)

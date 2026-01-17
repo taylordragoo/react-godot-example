@@ -63,7 +63,7 @@ interface ControlStyle extends NodeStyle, AnimationStyle {
 
 	anchorPreset?: LayoutPreset
 
-	// clipContents?: number
+	clipContents?: boolean
 
 	// used to set size
 	width?: number
@@ -180,6 +180,8 @@ interface LabelAttributes<T> extends ContainerAttributes<T> {
 		FontShadowStyle & {
 			uppercase?: bool
 			autowrapMode?: AutowrapMode
+			horizontalAlignment?: number
+			verticalAlignment?: number
 
 			// theme styles
 			lineSpacing?: number
@@ -206,11 +208,12 @@ interface LabelAttributes<T> extends ContainerAttributes<T> {
 		}
 }
 
-interface BoxAttributes<T> extends ContainerAttributes<T> {
-	style?: ControlStyle & {
-		separation?: number // number in pixels for how much to separate elements.
+	interface BoxAttributes<T> extends ContainerAttributes<T> {
+		alignment?: AlignmentMode
+		style?: ControlStyle & {
+			separation?: number // number in pixels for how much to separate elements.
+		}
 	}
-}
 
 interface FlowAttributes<T> extends ContainerAttributes<T> {
 	alignment?: AlignmentMode

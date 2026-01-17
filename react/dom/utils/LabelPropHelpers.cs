@@ -21,6 +21,14 @@ namespace Spectral.React
             {
                 instance.AutowrapMode = (TextServer.AutowrapMode)Convert.ToInt64(autowrapMode);
             }
+            if (C.TryGetStyleProps(props, "horizontalAlignment", out object horizontalAlignment))
+            {
+                instance.HorizontalAlignment = (HorizontalAlignment)Convert.ToInt64(horizontalAlignment);
+            }
+            if (C.TryGetStyleProps(props, "verticalAlignment", out object verticalAlignment))
+            {
+                instance.VerticalAlignment = (VerticalAlignment)Convert.ToInt64(verticalAlignment);
+            }
             ThemePropHelpers.InjectFontProps(instance, prevProps, props);
             ThemePropHelpers.InjectFontShadowProps(instance, prevProps, props);
             C.InjectThemeIntProps(instance, props, "lineSpacing", "line-spacing");

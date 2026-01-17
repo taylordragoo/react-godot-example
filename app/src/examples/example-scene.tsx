@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react"
-import { LayoutPreset, MouseFilterEnum, SizeFlags } from "gd"
+import { LayoutPreset, MouseFilterEnum } from "gd"
 import { dispatch, useBridgeState } from "bridge"
 
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v))
@@ -55,9 +55,9 @@ export const App = () => {
 					<label
 						key={i}
 						ref={labelRefs[i]}
+						class="hidden text-yellow-300 text-xl"
 						style={{
 							zIndex: 100,
-							visible: false,
 						}}
 					>
 						Ball {i}
@@ -66,71 +66,55 @@ export const App = () => {
 			</control>
 
 			{/* UI panel */}
-			<margin
-				style={{
-					anchorPreset: LayoutPreset.FullRect,
-					margin: 24,
-				}}
-			>
-				<div
-					style={{
-						backgroundStyle: "res://assets/panel.tres",
-					}}
-				>
-					<vbox
-						style={{
-							separation: 12,
-						}}
-					>
-						<label rich>
-							Progress: [b]{Math.round(progress * 100)}%[/b]
-						</label>
+			<margin class="w-full h-full p-0">
+				<div class="bg-slate-900">
+					<margin class="p-6">
+						<vbox class="gap-3">
+							<label rich class="text-white">
+								Progress: [b]{Math.round(progress * 100)}%[/b]
+							</label>
 
-						<slider
-							min={0}
-							max={1}
-							step={0.01}
-							value={progress}
-							onChange={(value) =>
-								dispatch({
-									type: "set_progress",
-									payload: { value },
-								})
-							}
-							style={{
-								expandBehaviorH: SizeFlags.ExpandFill,
-							}}
-						/>
-
-						<hbox
-							style={{
-								separation: 12,
-							}}
-						>
-							<button
-								onClick={() =>
-									dispatch({
-										type: "reset_progress",
-									})
-								}
-							>
-								Reset
-							</button>
-							<button
-								onClick={() =>
+							<slider
+								class="w-full"
+								min={0}
+								max={1}
+								step={0.01}
+								value={progress}
+								onChange={(value) =>
 									dispatch({
 										type: "set_progress",
-										payload: { value: clamp01(progress + 0.1) },
+										payload: { value },
 									})
 								}
-							>
-								+10%
-							</button>
-						</hbox>
-					</vbox>
+							/>
+
+							<hbox class="gap-3">
+								<button
+									class="text-white"
+									onClick={() =>
+										dispatch({
+											type: "reset_progress",
+										})
+									}
+								>
+									Reset
+								</button>
+								<button
+									class="text-white"
+									onClick={() =>
+										dispatch({
+											type: "set_progress",
+											payload: { value: clamp01(progress + 0.1) },
+										})
+									}
+								>
+									+10%
+								</button>
+							</hbox>
+						</vbox>
+					</margin>
 				</div>
 			</margin>
 		</>
 	)
 }
-

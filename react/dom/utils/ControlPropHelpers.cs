@@ -81,6 +81,11 @@ namespace Spectral.React
                 instance.SetAnchorsPreset((Control.LayoutPreset)Convert.ToInt64(anchorPreset));
             }
 
+            if (C.TryGetStyleProps(props, "clipContents", out object clipContents))
+            {
+                instance.ClipContents = Convert.ToBoolean(clipContents);
+            }
+
             if (C.TryGetStyleProps(props, "focusMode", out object focusMode))
             {
                 instance.FocusMode = (Control.FocusModeEnum)Convert.ToInt64(focusMode);

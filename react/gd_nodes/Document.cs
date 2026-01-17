@@ -167,21 +167,62 @@ namespace Spectral.React
 		public ScriptObject getClassFromStyleSheet(string className)
 		{
 			if (_styleSheet == null)
+				return null;
+			if (string.IsNullOrWhiteSpace(className))
+				return null;
+
+			try
+			{
+				var styles = _styleSheet.GetProperty(className);
+				if (styles is ScriptObject stylesObj)
+				{
+					return stylesObj;
+				}
+				if (styles != null && !(styles is Undefined))
+				{
+					return null;
+				}
+			}
+			catch (Exception)
+			{
+				// ignore and fall back to resolver
+			}
+
+			var resolved = TryResolveClassFromCallback(className);
+			if (resolved != null)
+			{
+				try
+				{
+					_styleSheet.SetProperty(className, resolved);
+				}
+				catch (Exception)
+				{
+					// ignore cache failures
+				}
+			}
+			return resolved;
+		}
+
+		ScriptObject TryResolveClassFromCallback(string className)
+		{
+			if (_engine == null)
+				return null;
+
+			try
+			{
+				var resolver = _engine.Script.__twGetClass;
+				if (resolver == null || resolver is Undefined)
+				{
+					return null;
+				}
+
+				object result = ((dynamic)_engine.Script).__twGetClass(className);
+				return result as ScriptObject;
+			}
+			catch (Exception)
 			{
 				return null;
 			}
-			_engine.Script.__stylesheet = _styleSheet;
-			_engine.Script.__classname = className;
-			object styles = _engine.Evaluate(
-				@"
-				__stylesheet[__classname];
-			"
-			);
-			if (styles is ScriptObject stylesObj)
-			{
-				return stylesObj;
-			}
-			return null;
 		}
 
 		// INTEROP
@@ -230,6 +271,7 @@ namespace Spectral.React
 			_engine.AddHostType("Theme", typeof(Theme));
 			_engine.AddHostType("Font", typeof(Font));
 			_engine.AddHostType("StyleBox", typeof(StyleBox));
+			_engine.AddHostType("StyleBoxFlat", typeof(StyleBoxFlat));
 
 			_engine.AddHostType("Document", typeof(Document));
 			_engine.AddHostObject("root", this);
@@ -319,6 +361,21 @@ namespace Spectral.React
 			_customNodes.Add(type, nodeType);
 		}
 
+		static bool ClassStringWantsPanel(string classString)
+		{
+			if (string.IsNullOrWhiteSpace(classString))
+				return false;
+
+			foreach (var token in classString.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+			{
+				if (token.StartsWith("bg-"))
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
 		public static IAnimatedDom createElement(
 			string type,
 			ScriptObject props,
@@ -382,12 +439,16 @@ namespace Spectral.React
 					newNode = new ControlNode();
 					break;
 				case "div":
-					if (C.TryGetStyleProps(props, "backgroundStyle", out object hasBackground))
+					var wantsPanel = C.TryGetStyleProps(props, "backgroundStyle", out object hasBackground);
+					if (
+						!wantsPanel
+						&& C.TryGetProps(props, "class", out object classObj)
+						&& classObj is string classString
+					)
 					{
-						newNode = new PanelNode();
-						break;
+						wantsPanel = ClassStringWantsPanel(classString);
 					}
-					newNode = new ContainerNode();
+					newNode = wantsPanel ? new PanelNode() : new ContainerNode();
 					break;
 				case "raw":
 					if (C.TryGetProps(props, "type", out object rawType))

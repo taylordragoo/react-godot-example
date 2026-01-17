@@ -32,8 +32,9 @@ namespace Spectral.React
                     return _style;
                 }
                 // TODO: add class styles
-                getDocument().Engine().Script.__oldStyle = _style;
-                getDocument().Engine().Script.__newStyle = _classStyles;
+                // Merge order: class first, then inline style (inline overrides class).
+                getDocument().Engine().Script.__oldStyle = _classStyles;
+                getDocument().Engine().Script.__newStyle = _style;
 
                 object style = this.getDocument()
                     .Engine()
