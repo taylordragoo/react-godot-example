@@ -1,6 +1,7 @@
 import { AnimatableNode } from "enums"
 import { GrowDirection, SizeFlags } from "gd"
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import React, { useMemo } from "react"
+import { useBridgeState } from "bridge"
 
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v))
 
@@ -20,29 +21,16 @@ export interface CharacterStatsProps {
 export const CharacterStats = ({ scale = 1 }: CharacterStatsProps) => {
 	const spx = (px: number) => Math.round(px * scale)
 
-	// Temporary demo state (replace with bridge/game state later).
-	const [health, setHealth] = useState(50)
-	const maxHealth = 100
-
-	const direction = useRef(1)
-	useEffect(() => {
-		const id = setInterval(() => {
-			setHealth((h) => {
-				let next = h + direction.current * 5
-				if (next >= maxHealth) {
-					next = maxHealth
-					direction.current = -1
-				} else if (next <= 0) {
-					next = 0
-					direction.current = 1
-				}
-				return next
-			})
-		}, 600)
-		return () => clearInterval(id)
-	}, [])
+	const fortnite = useBridgeState((s: any) => s?.fortnite)
+	const health = typeof fortnite?.health === "number" ? fortnite.health : 0
+	const maxHealth = typeof fortnite?.maxHealth === "number" ? fortnite.maxHealth : 0
+	const shield = typeof fortnite?.shield === "number" ? fortnite.shield : 0
+	const maxShield = typeof fortnite?.maxShield === "number" ? fortnite.maxShield : 0
+	const ammo = typeof fortnite?.ammo === "number" ? fortnite.ammo : 0
 
 	const barWidth = spx(356)
+	const shieldFrac = clamp01(maxShield > 0 ? shield / maxShield : 0)
+	const shieldFillWidth = Math.round(barWidth * shieldFrac)
 	const healthFrac = clamp01(maxHealth > 0 ? health / maxHealth : 0)
 	const healthFillWidth = Math.round(barWidth * healthFrac)
 
@@ -121,7 +109,7 @@ export const CharacterStats = ({ scale = 1 }: CharacterStatsProps) => {
 								<div
 									style={{
 										backgroundStyle: styles.shieldFill ?? "res://assets/panel.tres",
-										minWidth: Math.round(barWidth * 0.5),
+										minWidth: shieldFillWidth,
 										minHeight: spx(18),
 										expandBehaviorH: SizeFlags.ShrinkBegin,
 										expandBehaviorV: SizeFlags.ExpandFill,
@@ -132,7 +120,7 @@ export const CharacterStats = ({ scale = 1 }: CharacterStatsProps) => {
 						</div>
 
 						<label class="text-white text-xl" style={{ minWidth: spx(50) }}>
-							50
+							{Math.round(shield)}
 						</label>
 					</hbox>
 
@@ -194,7 +182,7 @@ export const CharacterStats = ({ scale = 1 }: CharacterStatsProps) => {
 						{"\uE9C1"}
 					</label>
 					<label class="text-white" style={{ fontSize: spx(30) }}>
-						50
+						{Math.round(ammo)}
 					</label>
 				</hbox>
 			</hbox>

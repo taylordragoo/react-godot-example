@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useMemo } from "react"
 import {
 	AlignmentMode,
 	GrowDirection,
@@ -6,6 +6,7 @@ import {
 	SizeFlags,
 	StretchModeEnum,
 } from "gd"
+import { useBridgeState } from "bridge"
 
 enum Rarity {
 	Common,
@@ -146,14 +147,10 @@ const Slot = ({ itemName, rarity = Rarity.Common, char = "X", selected, scale }:
 export const ActionBar = ({ scale = 1 }: ActionBarProps) => {
 	const spx = (px: number) => Math.round(px * scale)
 
-	const [slotIndex, setSlotIndex] = useState(0)
-
-	useEffect(() => {
-		const id = setInterval(() => {
-			setSlotIndex((i) => (i + 1) % 6)
-		}, 900)
-		return () => clearInterval(id)
-	}, [])
+	const slotIndex = useBridgeState((s: any) => {
+		const idx = s?.fortnite?.slotIndex
+		return typeof idx === "number" ? idx : 0
+	})
 
 	return (
 		<hbox

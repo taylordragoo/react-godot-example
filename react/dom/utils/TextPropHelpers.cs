@@ -40,6 +40,11 @@ namespace Spectral.React
 
                     return sb.ToString();
                 }
+
+                if (children != null)
+                {
+                    return children.ToString();
+                }
             }
             return "";
         }

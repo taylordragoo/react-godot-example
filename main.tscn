@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://cg8pvye1pb3ig"]
+[gd_scene load_steps=5 format=3 uid="uid://cg8pvye1pb3ig"]
 
 [ext_resource type="PackedScene" uid="uid://n4tuv3fsdgqj" path="res://react/ReactRoot.tscn" id="1_3dh2e"]
 [ext_resource type="Script" path="res://common/WindowManagement.cs" id="2_1aru7"]
 [ext_resource type="Script" path="res://common/ProgressManager.cs" id="3_5g6sl"]
+[ext_resource type="Script" path="res://common/FortniteSampleManager.cs" id="4_0p5x0"]
 
 [node name="main" type="Node2D"]
 
@@ -13,3 +14,6 @@ script = ExtResource("3_5g6sl")
 
 [node name="WindowManagement" type="Node" parent="."]
 script = ExtResource("2_1aru7")
+
+[node name="FortniteSampleManager" type="Node" parent="."]
+script = ExtResource("4_0p5x0")

@@ -92,7 +92,7 @@ namespace Spectral.Demo
 
 		void PublishState()
 		{
-			ReactDocument.Instance?.Bridge?.setState(new { progress = _progress });
+			BridgeStateStore.Set("progress", _progress);
 		}
 
 		void OnDispatch(ScriptObject action)

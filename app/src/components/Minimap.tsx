@@ -7,6 +7,7 @@ import {
 	SizeFlags,
 	StretchModeEnum,
 } from "gd"
+import { useBridgeState } from "bridge"
 
 const MAP_TEX = GD.Load<Texture2D>("res://assets/@fortnite-sample/map.jpg")
 
@@ -31,6 +32,16 @@ export const Minimap = ({ scale = 1 }: MinimapProps) => {
 
 	const mapRef = useRef<IDom>()
 	const hourGlassRef = useRef<IDom>()
+
+	const { stormTime, playersLeft, eliminations } = useBridgeState((s: any) => {
+		const fortnite = s?.fortnite
+		return {
+			stormTime: typeof fortnite?.stormTime === "string" ? fortnite.stormTime : "",
+			playersLeft: typeof fortnite?.playersLeft === "number" ? fortnite.playersLeft : 0,
+			eliminations:
+				typeof fortnite?.eliminations === "number" ? fortnite.eliminations : 0,
+		}
+	})
 
 	const styles = useMemo(() => {
 		const panel = createFlatStyleBox("#D8CBB0FF")
@@ -210,7 +221,7 @@ export const Minimap = ({ scale = 1 }: MinimapProps) => {
 					</label>
 				</div>
 
-				<label class="text-white text-lg">0:36</label>
+				<label class="text-white text-lg">{stormTime}</label>
 
 				<div
 					style={{
@@ -232,7 +243,7 @@ export const Minimap = ({ scale = 1 }: MinimapProps) => {
 					</label>
 				</div>
 
-				<label class="text-white text-lg">25</label>
+				<label class="text-white text-lg">{playersLeft}</label>
 
 				<div
 					style={{
@@ -254,7 +265,7 @@ export const Minimap = ({ scale = 1 }: MinimapProps) => {
 					</label>
 				</div>
 
-				<label class="text-white text-lg">7</label>
+				<label class="text-white text-lg">{eliminations}</label>
 			</hbox>
 		</vbox>
 	)
