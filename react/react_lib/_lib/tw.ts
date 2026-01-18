@@ -182,6 +182,44 @@ export const compileClassToken = (className: string): StyleObject | null => {
 	if (className === "grow-x") return { expandBehaviorH: SizeFlags.ExpandFill }
 	if (className === "grow-y") return { expandBehaviorV: SizeFlags.ExpandFill }
 
+	if (className === "shrink")
+		return {
+			expandBehaviorH: SizeFlags.ShrinkBegin,
+			expandBehaviorV: SizeFlags.ShrinkBegin,
+		}
+	if (className === "shrink-x") return { expandBehaviorH: SizeFlags.ShrinkBegin }
+	if (className === "shrink-y") return { expandBehaviorV: SizeFlags.ShrinkBegin }
+	if (className === "shrink-begin")
+		return {
+			expandBehaviorH: SizeFlags.ShrinkBegin,
+			expandBehaviorV: SizeFlags.ShrinkBegin,
+		}
+	if (className === "shrink-center")
+		return {
+			expandBehaviorH: SizeFlags.ShrinkCenter,
+			expandBehaviorV: SizeFlags.ShrinkCenter,
+		}
+	if (className === "shrink-end")
+		return {
+			expandBehaviorH: SizeFlags.ShrinkEnd,
+			expandBehaviorV: SizeFlags.ShrinkEnd,
+		}
+
+	if (className === "fill")
+		return { expandBehaviorH: SizeFlags.Fill, expandBehaviorV: SizeFlags.Fill }
+	if (className === "fill-x") return { expandBehaviorH: SizeFlags.Fill }
+	if (className === "fill-y") return { expandBehaviorV: SizeFlags.Fill }
+
+	if (className === "expand")
+		return { expandBehaviorH: SizeFlags.Expand, expandBehaviorV: SizeFlags.Expand }
+	if (className === "expand-x") return { expandBehaviorH: SizeFlags.Expand }
+	if (className === "expand-y") return { expandBehaviorV: SizeFlags.Expand }
+
+	if (className === "expand-fill")
+		return { expandBehaviorH: SizeFlags.ExpandFill, expandBehaviorV: SizeFlags.ExpandFill }
+	if (className === "expand-fill-x") return { expandBehaviorH: SizeFlags.ExpandFill }
+	if (className === "expand-fill-y") return { expandBehaviorV: SizeFlags.ExpandFill }
+
 	if (className === "absolute") return { position: "absolute" }
 	if (className === "relative") return { position: "relative" }
 

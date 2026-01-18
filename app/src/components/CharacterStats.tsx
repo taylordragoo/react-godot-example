@@ -1,5 +1,4 @@
 import { AnimatableNode } from "enums"
-import { SizeFlags } from "gd"
 import React from "react"
 import { useBridgeState } from "bridge"
 
@@ -38,18 +37,13 @@ export const CharacterStats = () => {
 						</label>
 
 							<div
-								class="bg-black/40 w-[356px] h-4.5"
-								style={{
-									expandBehaviorH: SizeFlags.ShrinkBegin,
-								}}
+								class="bg-black/40 w-[356px] h-4.5 shrink-x"
 							>
 								<hbox class="grow-x">
 									<div
-										class="bg-[#00A0E6] h-4.5"
+										class="bg-[#00A0E6] h-4.5 shrink-x grow-y"
 										style={{
 											minWidth: shieldFillWidth,
-											expandBehaviorH: SizeFlags.ShrinkBegin,
-											expandBehaviorV: SizeFlags.ExpandFill,
 										}}
 									/>
 									<control class="grow-x" />
@@ -74,18 +68,13 @@ export const CharacterStats = () => {
 						</label>
 
 							<div
-								class="bg-black/40 w-[356px] h-7"
-								style={{
-									expandBehaviorH: SizeFlags.ShrinkBegin,
-								}}
+								class="bg-black/40 w-[356px] h-7 shrink-x"
 							>
 								<hbox class="grow-x">
 									<div
-										class="bg-[#48E025] h-7"
+										class="bg-[#48E025] h-7 shrink-x grow-y"
 										style={{
 											minWidth: healthFillWidth,
-											expandBehaviorH: SizeFlags.ShrinkBegin,
-											expandBehaviorV: SizeFlags.ExpandFill,
 											transitions: [AnimatableNode.MinWidth],
 											transitionTimeMS: [500],
 										}}

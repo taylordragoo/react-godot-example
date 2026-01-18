@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from "react"
 import {
 	AlignmentMode,
 	MouseFilterEnum,
-	SizeFlags,
 } from "gd"
 import { useBridgeState } from "bridge"
 
@@ -95,12 +94,8 @@ export const Minimap = () => {
 			}}
 		>
 			<div
-				class="bg-[#D8CBB0] overflow-hidden w-[300px] h-[300px]"
-				style={{
-					expandBehaviorH: SizeFlags.Fill,
-					expandBehaviorV: SizeFlags.ShrinkBegin,
-				}}
-				>
+				class="bg-[#D8CBB0] overflow-hidden w-[300px] h-[300px] fill-x shrink-y"
+			>
 					<control
 					class="grow"
 						style={{
@@ -129,20 +124,14 @@ export const Minimap = () => {
 			</div>
 
 			<hbox
-				class="gap-1.5"
+				class="gap-1.5 fill-x grow-y"
 				alignment={AlignmentMode.Center}
 				style={{
-					expandBehaviorH: SizeFlags.Fill,
-					expandBehaviorV: SizeFlags.ExpandFill,
 					mouseFilter: MouseFilterEnum.Ignore,
 				}}
 			>
 				<div
-					class="bg-black/30 rounded-full w-[26px] h-[26px]"
-					style={{
-						expandBehaviorH: SizeFlags.ShrinkBegin,
-						expandBehaviorV: SizeFlags.ShrinkBegin,
-					}}
+					class="bg-black/30 rounded-full w-[26px] h-[26px] shrink"
 				>
 					<label
 						ref={hourGlassRef}
@@ -158,11 +147,7 @@ export const Minimap = () => {
 				<label class="text-white text-lg">{stormTime}</label>
 
 				<div
-					class="bg-black/30 rounded-full w-[26px] h-[26px]"
-					style={{
-						expandBehaviorH: SizeFlags.ShrinkBegin,
-						expandBehaviorV: SizeFlags.ShrinkBegin,
-					}}
+					class="bg-black/30 rounded-full w-[26px] h-[26px] shrink"
 				>
 					<label
 						class="rpgawesome text-white text-base"
@@ -177,11 +162,7 @@ export const Minimap = () => {
 				<label class="text-white text-lg">{playersLeft}</label>
 
 				<div
-					class="bg-black/30 rounded-full w-[26px] h-[26px]"
-					style={{
-						expandBehaviorH: SizeFlags.ShrinkBegin,
-						expandBehaviorV: SizeFlags.ShrinkBegin,
-					}}
+					class="bg-black/30 rounded-full w-[26px] h-[26px] shrink"
 				>
 					<label
 						class="rpgawesome text-white text-base"
