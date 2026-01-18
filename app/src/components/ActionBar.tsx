@@ -1,10 +1,7 @@
 import React, { useCallback } from "react"
 import {
 	AlignmentMode,
-	LayoutPreset,
 	MouseFilterEnum,
-	SizeFlags,
-	StretchModeEnum,
 } from "gd"
 import { dispatch, useBridgeEvents, useBridgeState } from "bridge"
 
@@ -47,75 +44,45 @@ const Slot = ({
 	onSelect,
 	onGuiInput,
 }: SlotProps) => {
-	const slotWidth = 80
-	const slotHeight = 120
-	const iconSize = 80
-
-	const iconGap = selected ? 18 : 6
-
 	const rarityColor = RARITY_COLORS[rarity] ?? RARITY_COLORS[Rarity.Common]
-	const iconBorderWidth = itemName ? (selected ? 2 : 0) : 1
-	const iconBorderColor = itemName ? (selected ? "#FFFFFFFF" : "#00000000") : "#FFFFFF80"
 
 	const tex = itemName ? ITEM_TEXTURES[itemName] : null
 
 	const handleSelect = () => onSelect?.(index)
 
-	return (
-		<control style={{ minWidth: slotWidth, minHeight: slotHeight }}>
-			<vbox
-				alignment={AlignmentMode.Center}
-				style={{
-					anchorPreset: LayoutPreset.FullRect,
-					expandBehaviorH: SizeFlags.ExpandFill,
-					expandBehaviorV: SizeFlags.ExpandFill,
-					separation: iconGap,
-				}}
-			>
-				<control style={{ expandBehaviorV: SizeFlags.ExpandFill }} />
+	const gapClass = selected ? "gap-4.5" : "gap-1.5"
+	const iconClass = tex
+		? `w-20 h-20 rounded-md bg-[${rarityColor}] ${
+				selected ? "border-2 border-white" : "border-0 border-transparent"
+			}`
+		: "w-20 h-20 rounded-md bg-transparent border border-white/50"
 
-					<div
-						onClick={handleSelect}
-						onGuiInput={onGuiInput}
-						style={{
-							bgColor: itemName ? rarityColor : "#00000000",
-							cornerRadius: 6,
-							borderWidth: iconBorderWidth,
-							borderColor: iconBorderColor,
-							minWidth: iconSize,
-							minHeight: iconSize,
-						}}
-					>
-					{tex ? (
+	return (
+		<control class="w-20 h-30">
+				<vbox
+					alignment={AlignmentMode.Center}
+					class={`absolute inset-0 ${gapClass}`}
+				>
+					<control class="grow-y" />
+
+					<div onClick={handleSelect} onGuiInput={onGuiInput} class={iconClass}>
+						{tex ? (
 						<texture
 							texture={tex}
-							style={{
-								expandBehaviorH: SizeFlags.ExpandFill,
-								expandBehaviorV: SizeFlags.ExpandFill,
-								stretchMode: StretchModeEnum.KeepAspectCovered,
-							}}
+							class="grow object-cover"
 						/>
 					) : null}
 					</div>
 
-					<div
-						onClick={handleSelect}
-						onGuiInput={onGuiInput}
-						style={{
-							bgColor: "#00000080",
-							cornerRadius: 4,
-							borderWidth: 1,
-							borderColor: "#FFFFFF4D",
-							paddingLeft: 6,
-							paddingRight: 6,
-							paddingTop: 2,
-							paddingBottom: 2,
-						}}
-					>
-						<label class="text-white text-xs">{char}</label>
-					</div>
-				</vbox>
-			</control>
+				<div
+					onClick={handleSelect}
+					onGuiInput={onGuiInput}
+					class="bg-black/50 rounded border border-white/30 px-1.5 py-0.5"
+				>
+					<label class="text-white text-xs">{char}</label>
+				</div>
+			</vbox>
+		</control>
 	)
 }
 

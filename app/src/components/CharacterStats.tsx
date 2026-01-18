@@ -1,5 +1,5 @@
 import { AnimatableNode } from "enums"
-import { GrowDirection, SizeFlags } from "gd"
+import { SizeFlags } from "gd"
 import React from "react"
 import { useBridgeState } from "bridge"
 
@@ -20,114 +20,88 @@ export const CharacterStats = () => {
 	const healthFillWidth = Math.round(barWidth * healthFrac)
 
 	return (
-		<div
-			class="absolute left-20 bottom-20 w-[580px] h-[80px] bg-black/40 rounded-lg p-3 z-10"
-		>
-			<hbox
-				class="gap-3"
-				style={{
-					expandBehaviorH: SizeFlags.ExpandFill,
-					expandBehaviorV: SizeFlags.ExpandFill,
-				}}
+			<div
+				class="absolute left-20 bottom-20 w-[580px] h-[80px] bg-black/40 rounded-lg p-3 z-10"
 			>
-				<vbox
-					class="gap-1.5"
-					style={{
-						expandBehaviorH: SizeFlags.ExpandFill,
-						expandBehaviorV: SizeFlags.ExpandFill,
-					}}
-				>
-					{/* Shield row */}
-					<hbox
-						class="gap-2"
-						style={{ expandBehaviorH: SizeFlags.ExpandFill }}
+				<hbox class="gap-3 grow">
+					<vbox
+						class="gap-1.5 grow"
 					>
+						{/* Shield row */}
+						<hbox
+							class="gap-2 grow-x"
+						>
 						<label
-							class="rpgawesome text-white text-xl"
-							style={{ minWidth: 40 }}
+							class="rpgawesome text-white text-xl w-10"
 						>
 							{"\uEAE0"}
 						</label>
 
-						<div
-							class="bg-black/40"
-							style={{
-								minWidth: barWidth,
-								minHeight: 18,
-								expandBehaviorH: SizeFlags.ShrinkBegin,
-							}}
-						>
-							<hbox style={{ expandBehaviorH: SizeFlags.ExpandFill }}>
-								<div
-									class="bg-[#00A0E6]"
-									style={{
-										minWidth: shieldFillWidth,
-										minHeight: 18,
-										expandBehaviorH: SizeFlags.ShrinkBegin,
-										expandBehaviorV: SizeFlags.ExpandFill,
-									}}
-								/>
-								<control style={{ expandBehaviorH: SizeFlags.ExpandFill }} />
-							</hbox>
-						</div>
+							<div
+								class="bg-black/40 w-[356px] h-4.5"
+								style={{
+									expandBehaviorH: SizeFlags.ShrinkBegin,
+								}}
+							>
+								<hbox class="grow-x">
+									<div
+										class="bg-[#00A0E6] h-4.5"
+										style={{
+											minWidth: shieldFillWidth,
+											expandBehaviorH: SizeFlags.ShrinkBegin,
+											expandBehaviorV: SizeFlags.ExpandFill,
+										}}
+									/>
+									<control class="grow-x" />
+								</hbox>
+							</div>
 
-						<label class="text-white text-xl" style={{ minWidth: 50 }}>
+						<label class="text-white text-xl w-[50px]">
 							{Math.round(shield)}
 						</label>
 					</hbox>
 
-					<control style={{ minHeight: 6 }} />
+					<control class="h-1.5" />
 
-					{/* Health row */}
-					<hbox
-						class="gap-2"
-						style={{ expandBehaviorH: SizeFlags.ExpandFill }}
-					>
+						{/* Health row */}
+						<hbox
+							class="gap-2 grow-x"
+						>
 						<label
-							class="rpgawesome text-white text-xl"
-							style={{ minWidth: 40 }}
+							class="rpgawesome text-white text-xl w-10"
 						>
 							{"\uE9F5"}
 						</label>
 
-						<div
-							class="bg-black/40"
-							style={{
-								minWidth: barWidth,
-								minHeight: 28,
-								expandBehaviorH: SizeFlags.ShrinkBegin,
-							}}
-						>
-							<hbox style={{ expandBehaviorH: SizeFlags.ExpandFill }}>
-								<div
-									class="bg-[#48E025]"
-									style={{
-										minWidth: healthFillWidth,
-										minHeight: 28,
-										expandBehaviorH: SizeFlags.ShrinkBegin,
-										expandBehaviorV: SizeFlags.ExpandFill,
-										transitions: [AnimatableNode.MinWidth],
-										transitionTimeMS: [500],
-									}}
-								/>
-								<control style={{ expandBehaviorH: SizeFlags.ExpandFill }} />
-							</hbox>
-						</div>
+							<div
+								class="bg-black/40 w-[356px] h-7"
+								style={{
+									expandBehaviorH: SizeFlags.ShrinkBegin,
+								}}
+							>
+								<hbox class="grow-x">
+									<div
+										class="bg-[#48E025] h-7"
+										style={{
+											minWidth: healthFillWidth,
+											expandBehaviorH: SizeFlags.ShrinkBegin,
+											expandBehaviorV: SizeFlags.ExpandFill,
+											transitions: [AnimatableNode.MinWidth],
+											transitionTimeMS: [500],
+										}}
+									/>
+									<control class="grow-x" />
+								</hbox>
+							</div>
 
-						<label class="text-white text-xl" style={{ minWidth: 50 }}>
+						<label class="text-white text-xl w-[50px]">
 							{Math.round(health)}
 						</label>
 					</hbox>
 				</vbox>
 
 				{/* Right block */}
-				<hbox
-					class="gap-2"
-					style={{
-						minWidth: 116,
-						expandBehaviorV: SizeFlags.ExpandFill,
-					}}
-				>
+				<hbox class="gap-2 w-29 grow-y">
 					<label
 						class="rpgawesome text-[#89FFFF] text-6xl"
 					>

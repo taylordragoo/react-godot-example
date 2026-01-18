@@ -1,10 +1,8 @@
 import React, { useEffect, useRef } from "react"
 import {
 	AlignmentMode,
-	LayoutPreset,
 	MouseFilterEnum,
 	SizeFlags,
-	StretchModeEnum,
 } from "gd"
 import { useBridgeState } from "bridge"
 
@@ -102,44 +100,27 @@ export const Minimap = () => {
 					expandBehaviorH: SizeFlags.Fill,
 					expandBehaviorV: SizeFlags.ShrinkBegin,
 				}}
-			>
-				<control
-					style={{
-						anchorPreset: LayoutPreset.FullRect,
-						mouseFilter: MouseFilterEnum.Ignore,
-					}}
 				>
-					<texture
-						ref={mapRef}
-						texture={MAP_TEX}
+					<control
+					class="grow"
 						style={{
-							anchorLeft: 0,
-							anchorRight: 0,
-							anchorTop: 0,
-							anchorBottom: 0,
-							offsetLeft: -850,
-							offsetTop: -850,
-							offsetRight: -850 + 1400,
-							offsetBottom: -850 + 1400,
-							stretchMode: StretchModeEnum.KeepAspectCovered,
 							mouseFilter: MouseFilterEnum.Ignore,
 						}}
-					/>
+					>
+						<texture
+							ref={mapRef}
+							texture={MAP_TEX}
+							class="absolute -top-[850px] -left-[850px] w-[1400px] h-[1400px] object-cover"
+							style={{
+								mouseFilter: MouseFilterEnum.Ignore,
+							}}
+						/>
 
 					<label
-						class="rpgawesome text-white text-xl"
+						class="absolute top-[140px] left-[140px] w-[40px] h-[40px] rpgawesome text-white text-xl z-10"
 						style={{
-							anchorLeft: 0,
-							anchorRight: 0,
-							anchorTop: 0,
-							anchorBottom: 0,
-							offsetLeft: 140,
-							offsetTop: 140,
-							offsetRight: 140 + 40,
-							offsetBottom: 140 + 40,
 							...iconAlign,
 							mouseFilter: MouseFilterEnum.Ignore,
-							zIndex: 10,
 						}}
 					>
 						{"\uEAC5"}
@@ -167,7 +148,6 @@ export const Minimap = () => {
 						ref={hourGlassRef}
 						class="rpgawesome text-base"
 						style={{
-							anchorPreset: LayoutPreset.FullRect,
 							...iconAlign,
 						}}
 					>
@@ -187,7 +167,6 @@ export const Minimap = () => {
 					<label
 						class="rpgawesome text-white text-base"
 						style={{
-							anchorPreset: LayoutPreset.FullRect,
 							...iconAlign,
 						}}
 					>
@@ -207,7 +186,6 @@ export const Minimap = () => {
 					<label
 						class="rpgawesome text-white text-base"
 						style={{
-							anchorPreset: LayoutPreset.FullRect,
 							...iconAlign,
 						}}
 					>

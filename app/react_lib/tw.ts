@@ -1,9 +1,21 @@
-import { SizeFlags } from "gd"
+import { SizeFlags, StretchModeEnum } from "gd"
 
 type StyleObject = Record<string, any>
 type StyleSheet = Record<string, StyleObject>
 
 const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v))
+
+const parseFraction = (token: string): number | null => {
+	if (!token) return null
+	const parts = token.split("/")
+	if (parts.length !== 2) return null
+
+	const num = Number(parts[0])
+	const den = Number(parts[1])
+	if (!Number.isFinite(num) || !Number.isFinite(den) || den === 0) return null
+
+	return num / den
+}
 
 const hexByte = (v: number) =>
 	clamp(Math.round(v), 0, 255).toString(16).padStart(2, "0").toUpperCase()
@@ -165,8 +177,22 @@ export const compileClassToken = (className: string): StyleObject | null => {
 	if (className === "block" || className === "flex" || className === "inline")
 		return { visible: true }
 
+	if (className === "grow")
+		return { expandBehaviorH: SizeFlags.ExpandFill, expandBehaviorV: SizeFlags.ExpandFill }
+	if (className === "grow-x") return { expandBehaviorH: SizeFlags.ExpandFill }
+	if (className === "grow-y") return { expandBehaviorV: SizeFlags.ExpandFill }
+
 	if (className === "absolute") return { position: "absolute" }
 	if (className === "relative") return { position: "relative" }
+
+	if (className === "object-cover")
+		return { stretchMode: StretchModeEnum.KeepAspectCovered }
+	if (className === "object-contain")
+		return { stretchMode: StretchModeEnum.KeepAspectCentered }
+	if (className === "object-fill")
+		return { stretchMode: StretchModeEnum.Scale }
+	if (className === "object-none")
+		return { stretchMode: StretchModeEnum.KeepCentered }
 
 	if (className === "flex") return { display: "flex" }
 	if (className === "flex-row") return { flexDirection: "row" }
@@ -366,12 +392,20 @@ export const compileClassToken = (className: string): StyleObject | null => {
 
 	if (className.startsWith("w-")) {
 		const token = className.slice("w-".length)
+		const frac = parseFraction(token)
+		if (frac !== null) {
+			return { expandBehaviorH: SizeFlags.ExpandFill, stretchRatioH: frac }
+		}
 		const px = token.startsWith("[") ? parseArbitraryPx(token) : SPACING_PX(token)
 		if (px === null) return null
 		return { minWidth: px }
 	}
 	if (className.startsWith("h-")) {
 		const token = className.slice("h-".length)
+		const frac = parseFraction(token)
+		if (frac !== null) {
+			return { expandBehaviorV: SizeFlags.ExpandFill, stretchRatioV: frac }
+		}
 		const px = token.startsWith("[") ? parseArbitraryPx(token) : SPACING_PX(token)
 		if (px === null) return null
 		return { minHeight: px }

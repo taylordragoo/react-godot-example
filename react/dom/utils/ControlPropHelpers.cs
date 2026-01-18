@@ -274,8 +274,141 @@ namespace Spectral.React
                     Convert.ToInt64(layoutDirection);
             }
             
+            InjectStretchRatioProps(component, instance, prevProps, props);
             InjectPositioningProps(instance, props);
             InjectAnchorProps(instance, prevProps, props);
+        }
+
+        static void InjectStretchRatioProps(
+            IAnimatedDom component,
+            Control instance,
+            ScriptObject prevProps,
+            ScriptObject props
+        )
+        {
+            var isClassUpdate =
+                C.TryGetProps(props, "__classUpdate", out object classUpdateObj)
+                && classUpdateObj is bool classUpdate
+                && classUpdate;
+
+            float ratio;
+            var hasRatio = TryGetStyleFloat(props, "stretchRatio", out ratio);
+
+            float ratioH;
+            var hasRatioH = TryGetStyleFloat(props, "stretchRatioH", out ratioH);
+
+            float ratioV;
+            var hasRatioV = TryGetStyleFloat(props, "stretchRatioV", out ratioV);
+
+            var hasAny = hasRatio || hasRatioH || hasRatioV;
+
+            var prevHadAny = false;
+            if (!isClassUpdate && prevProps != null)
+            {
+                prevHadAny =
+                    C.TryGetStyleProps(prevProps, "stretchRatio", out _)
+                    || C.TryGetStyleProps(prevProps, "stretchRatioH", out _)
+                    || C.TryGetStyleProps(prevProps, "stretchRatioV", out _);
+            }
+
+            // Avoid clobbering class-applied ratios when only inline style updates.
+            if (!isClassUpdate && !hasAny && !prevHadAny)
+            {
+                return;
+            }
+
+            var handlerStore = component as IEventHandlerStore;
+            if (handlerStore != null)
+            {
+                DetachStretchRatioHandlers(handlerStore, instance);
+            }
+
+            // Class update cleared ratio tokens: reset to default.
+            if (isClassUpdate && !hasAny)
+            {
+                instance.SizeFlagsStretchRatio = 1.0f;
+                return;
+            }
+
+            // Inline style removed ratio props: reset to default.
+            if (!isClassUpdate && !hasAny && prevHadAny)
+            {
+                instance.SizeFlagsStretchRatio = 1.0f;
+                return;
+            }
+
+            void Apply()
+            {
+                float? target = null;
+
+                var parent = instance.GetParent();
+                if (parent is HBoxContainer)
+                {
+                    if (hasRatioH)
+                        target = ratioH;
+                    else if (hasRatio)
+                        target = ratio;
+                }
+                else if (parent is VBoxContainer)
+                {
+                    if (hasRatioV)
+                        target = ratioV;
+                    else if (hasRatio)
+                        target = ratio;
+                }
+                else if (hasRatio)
+                {
+                    target = ratio;
+                }
+
+                if (target == null)
+                {
+                    instance.SizeFlagsStretchRatio = 1.0f;
+                    return;
+                }
+
+                instance.SizeFlagsStretchRatio = Mathf.Max(0.0f, target.Value);
+            }
+
+            Apply();
+
+            if (handlerStore != null)
+            {
+                Action treeEnteredHandler = () => Apply();
+                instance.TreeEntered += treeEnteredHandler;
+                handlerStore.SetEventHandler("tw:stretch:treeEntered", treeEnteredHandler);
+            }
+        }
+
+        static void DetachStretchRatioHandlers(IEventHandlerStore store, Control instance)
+        {
+            if (
+                store.TryGetEventHandler("tw:stretch:treeEntered", out var prevTreeEntered)
+                && prevTreeEntered is Action prevTreeEnteredAction
+            )
+            {
+                instance.TreeEntered -= prevTreeEnteredAction;
+                store.RemoveEventHandler("tw:stretch:treeEntered");
+            }
+        }
+
+        static bool TryGetStyleFloat(ScriptObject props, string name, out float value)
+        {
+            value = 0.0f;
+            if (!C.TryGetStyleProps(props, name, out object obj))
+            {
+                return false;
+            }
+
+            try
+            {
+                value = Convert.ToSingle(obj);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         static void InjectPositioningProps(Control instance, ScriptObject props)

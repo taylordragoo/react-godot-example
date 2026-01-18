@@ -101,6 +101,11 @@ interface ControlStyle extends NodeStyle, AnimationStyle {
 	expandBehaviorH?: SizeFlags
 	expandBehaviorV?: SizeFlags
 
+	// Container stretch ratio (BoxContainer main axis)
+	stretchRatio?: number
+	stretchRatioH?: number
+	stretchRatioV?: number
+
 	growHorizontal?: GrowDirection
 	growVertical?: GrowDirection
 
