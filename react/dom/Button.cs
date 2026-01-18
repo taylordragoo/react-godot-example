@@ -30,6 +30,11 @@ namespace Spectral.React
                 };
                 _instance.Pressed += clickEvent;
             }
+            else if (clickEvent != null)
+            {
+                _instance.Pressed -= clickEvent;
+                clickEvent = null;
+            }
 
             if (C.TryGetProps(newProps, "disabled", out object disabled))
             {

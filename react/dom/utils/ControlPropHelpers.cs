@@ -42,27 +42,89 @@ namespace Spectral.React
                 }
             }
 
-            // MOUSE ACTIONS
-            if (C.TryGetProps(prevProps, "onMouseEnter", out object prevMouseEnterProps))
+            // INPUT / MOUSE ACTIONS
+            var handlerStore = component as IEventHandlerStore;
+
+            if (
+                handlerStore != null
+                && handlerStore.TryGetEventHandler("onMouseEnter", out var prevMouseEnterHandler)
+                && prevMouseEnterHandler is Action prevMouseEnterAction
+            )
             {
-                foreach (
-                    var connection in instance.GetSignalConnectionList(
-                        nameof(instance.MouseEntered)
-                    )
-                )
-                {
-                    // TODO: figure this out? It's not too big a deal since it looks like they don't change easily.
-                }
+                instance.MouseEntered -= prevMouseEnterAction;
+                handlerStore.RemoveEventHandler("onMouseEnter");
             }
             if (C.TryGetProps(props, "onMouseEnter", out object mouseEnterProps))
             {
-                instance.MouseEntered += () => ((dynamic)mouseEnterProps)();
+                Action handler = () => ((dynamic)mouseEnterProps)();
+                instance.MouseEntered += handler;
+                handlerStore?.SetEventHandler("onMouseEnter", handler);
             }
-            var prevMouseExitProps = prevProps?.GetProperty("onMouseExit");
 
-            if (C.TryGetProps(props, "onMouseEnter", out object mouseExitProps))
+            if (
+                handlerStore != null
+                && handlerStore.TryGetEventHandler("onMouseExit", out var prevMouseExitHandler)
+                && prevMouseExitHandler is Action prevMouseExitAction
+            )
             {
-                instance.MouseExited += () => ((dynamic)mouseExitProps)();
+                instance.MouseExited -= prevMouseExitAction;
+                handlerStore.RemoveEventHandler("onMouseExit");
+            }
+            if (C.TryGetProps(props, "onMouseExit", out object mouseExitProps))
+            {
+                Action handler = () => ((dynamic)mouseExitProps)();
+                instance.MouseExited += handler;
+                handlerStore?.SetEventHandler("onMouseExit", handler);
+            }
+
+            if (
+                handlerStore != null
+                && handlerStore.TryGetEventHandler("onGuiInput", out var prevGuiInputHandler)
+                && prevGuiInputHandler is Control.GuiInputEventHandler prevGuiInputAction
+            )
+            {
+                instance.GuiInput -= prevGuiInputAction;
+                handlerStore.RemoveEventHandler("onGuiInput");
+            }
+            if (C.TryGetProps(props, "onGuiInput", out object guiInputProps))
+            {
+                Control.GuiInputEventHandler handler = ev => ((dynamic)guiInputProps)(ev);
+                instance.GuiInput += handler;
+                handlerStore?.SetEventHandler("onGuiInput", handler);
+            }
+
+            if (
+                handlerStore != null
+                && handlerStore.TryGetEventHandler("onClick", out var prevClickHandler)
+                && prevClickHandler is Control.GuiInputEventHandler prevClickAction
+            )
+            {
+                instance.GuiInput -= prevClickAction;
+                handlerStore.RemoveEventHandler("onClick");
+            }
+            if (instance is not BaseButton && C.TryGetProps(props, "onClick", out object clickProps))
+            {
+                Control.GuiInputEventHandler handler = ev =>
+                {
+                    if (ev is not InputEventMouseButton mb)
+                        return;
+                    if (mb.ButtonIndex != MouseButton.Left)
+                        return;
+                    if (mb.Pressed)
+                        return;
+
+                    try
+                    {
+                        ((dynamic)clickProps)();
+                    }
+                    catch (Exception ex)
+                    {
+                        GD.PrintErr(ex);
+                    }
+                };
+
+                instance.GuiInput += handler;
+                handlerStore?.SetEventHandler("onClick", handler);
             }
 
             // STYLE ACTIONS

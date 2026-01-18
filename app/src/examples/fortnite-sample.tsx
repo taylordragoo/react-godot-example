@@ -7,7 +7,7 @@ import { Minimap } from "../components/Minimap"
 const bgTex = GD.Load<Texture2D>("res://assets/@fortnite-sample/screenie2.jpg")
 
 export const FortniteSample = () => {
-	const uiScale = 0.5
+	const uiScale = 0.6
 
 	return (
 		<>
@@ -22,9 +22,11 @@ export const FortniteSample = () => {
 					zIndex: -100,
 				}}
 			/>
-			<CharacterStats scale={uiScale} />
-			<ActionBar scale={uiScale} />
-			<Minimap scale={uiScale} />
+			<uiroot scale={uiScale} style={{ mouseFilter: MouseFilterEnum.Ignore }}>
+				<CharacterStats />
+				<ActionBar />
+				<Minimap />
+			</uiroot>
 		</>
 	)
 }

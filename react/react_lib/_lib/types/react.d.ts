@@ -114,6 +114,8 @@ interface ControlAttributes<T> extends CanvasItemAttributes<T> {
 	tooltip?: string
 	onMouseEnter?: () => void
 	onMouseExit?: () => void
+	onClick?: () => void
+	onGuiInput?: (event: any) => void
 
 	autoTranslate?: boolean
 
@@ -274,9 +276,14 @@ interface RawNodeAttributes<T> extends CanvasItemAttributes<T> {
 	raw?: Record<string, any>
 }
 
+interface UiRootAttributes<T> extends ControlAttributes<T> {
+	scale?: number
+}
+
 declare namespace JSX {
 	interface IntrinsicElements {
 		control: React.DetailedHTMLProps<ControlAttributes<ControlElement>, ControlElement>
+		uiroot: React.DetailedHTMLProps<UiRootAttributes<ControlElement>, ControlElement>
 		div: React.DetailedHTMLProps<PanelAttributes<ControlElement>, ControlElement>
 		button: React.DetailedHTMLProps<ButtonAttributes<ControlElement>, ControlElement>
 		slider: React.DetailedHTMLProps<SliderAttributes<ControlElement>, ControlElement>

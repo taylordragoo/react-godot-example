@@ -17,3 +17,4 @@ script = ExtResource("2_1aru7")
 
 [node name="FortniteSampleManager" type="Node" parent="."]
 script = ExtResource("4_0p5x0")
+Shield = 100.0

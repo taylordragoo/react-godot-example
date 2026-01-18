@@ -23,13 +23,7 @@ const createFlatStyleBox = (bgColor: string) => {
 const easeInOutQuad = (t: number) =>
 	t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
 
-export interface MinimapProps {
-	scale?: number
-}
-
-export const Minimap = ({ scale = 1 }: MinimapProps) => {
-	const spx = (px: number) => Math.round(px * scale)
-
+export const Minimap = () => {
 	const mapRef = useRef<IDom>()
 	const hourGlassRef = useRef<IDom>()
 
@@ -48,7 +42,7 @@ export const Minimap = ({ scale = 1 }: MinimapProps) => {
 
 		const bubble = createFlatStyleBox("#0000004D")
 		if (bubble) {
-			const r = spx(13)
+			const r = 13
 			bubble.CornerRadiusTopLeft = r
 			bubble.CornerRadiusTopRight = r
 			bubble.CornerRadiusBottomLeft = r
@@ -56,13 +50,13 @@ export const Minimap = ({ scale = 1 }: MinimapProps) => {
 		}
 
 		return { panel, bubble }
-	}, [scale])
+	}, [])
 
 	useEffect(() => {
-		const mapSize = spx(1400)
-		const baseLeft = spx(-850)
-		const baseTop = spx(-850)
-		const travel = spx(600)
+		const mapSize = 1400
+		const baseLeft = -850
+		const baseTop = -850
+		const travel = 600
 		const durationMs = 10000
 
 		let startTs = -1
@@ -101,7 +95,7 @@ export const Minimap = ({ scale = 1 }: MinimapProps) => {
 
 		rafId = requestAnimationFrame(tick)
 		return () => cancelAnimationFrame(rafId)
-	}, [scale])
+	}, [])
 
 	useEffect(() => {
 		let isWhite = true
@@ -127,13 +121,13 @@ export const Minimap = ({ scale = 1 }: MinimapProps) => {
 				anchorRight: 1,
 				anchorTop: 0,
 				anchorBottom: 0,
-				offsetRight: -spx(16),
-				offsetLeft: -spx(16) - spx(300),
-				offsetTop: spx(16),
-				offsetBottom: spx(16) + spx(400),
+				offsetRight: -16,
+				offsetLeft: -16 - 300,
+				offsetTop: 16,
+				offsetBottom: 16 + 400,
 				growHorizontal: GrowDirection.Begin,
 				growVertical: GrowDirection.End,
-				separation: spx(8),
+				separation: 8,
 				zIndex: 30,
 			}}
 		>
@@ -141,8 +135,8 @@ export const Minimap = ({ scale = 1 }: MinimapProps) => {
 				style={{
 					backgroundStyle: styles.panel ?? "res://assets/panel.tres",
 					clipContents: true,
-					minWidth: spx(300),
-					minHeight: spx(300),
+					minWidth: 300,
+					minHeight: 300,
 					expandBehaviorH: SizeFlags.Fill,
 					expandBehaviorV: SizeFlags.ShrinkBegin,
 				}}
@@ -161,10 +155,10 @@ export const Minimap = ({ scale = 1 }: MinimapProps) => {
 							anchorRight: 0,
 							anchorTop: 0,
 							anchorBottom: 0,
-							offsetLeft: spx(-850),
-							offsetTop: spx(-850),
-							offsetRight: spx(-850) + spx(1400),
-							offsetBottom: spx(-850) + spx(1400),
+							offsetLeft: -850,
+							offsetTop: -850,
+							offsetRight: -850 + 1400,
+							offsetBottom: -850 + 1400,
 							stretchMode: StretchModeEnum.KeepAspectCovered,
 							mouseFilter: MouseFilterEnum.Ignore,
 						}}
@@ -177,10 +171,10 @@ export const Minimap = ({ scale = 1 }: MinimapProps) => {
 							anchorRight: 0,
 							anchorTop: 0,
 							anchorBottom: 0,
-							offsetLeft: spx(140),
-							offsetTop: spx(140),
-							offsetRight: spx(140) + spx(40),
-							offsetBottom: spx(140) + spx(40),
+							offsetLeft: 140,
+							offsetTop: 140,
+							offsetRight: 140 + 40,
+							offsetBottom: 140 + 40,
 							...iconAlign,
 							mouseFilter: MouseFilterEnum.Ignore,
 							zIndex: 10,
@@ -196,15 +190,15 @@ export const Minimap = ({ scale = 1 }: MinimapProps) => {
 				style={{
 					expandBehaviorH: SizeFlags.Fill,
 					expandBehaviorV: SizeFlags.ExpandFill,
-					separation: spx(6),
+					separation: 6,
 					mouseFilter: MouseFilterEnum.Ignore,
 				}}
 			>
 				<div
 					style={{
 						backgroundStyle: styles.bubble ?? "res://assets/panel.tres",
-						minWidth: spx(26),
-						minHeight: spx(26),
+						minWidth: 26,
+						minHeight: 26,
 						expandBehaviorH: SizeFlags.ShrinkBegin,
 						expandBehaviorV: SizeFlags.ShrinkBegin,
 					}}
@@ -226,8 +220,8 @@ export const Minimap = ({ scale = 1 }: MinimapProps) => {
 				<div
 					style={{
 						backgroundStyle: styles.bubble ?? "res://assets/panel.tres",
-						minWidth: spx(26),
-						minHeight: spx(26),
+						minWidth: 26,
+						minHeight: 26,
 						expandBehaviorH: SizeFlags.ShrinkBegin,
 						expandBehaviorV: SizeFlags.ShrinkBegin,
 					}}
@@ -248,8 +242,8 @@ export const Minimap = ({ scale = 1 }: MinimapProps) => {
 				<div
 					style={{
 						backgroundStyle: styles.bubble ?? "res://assets/panel.tres",
-						minWidth: spx(26),
-						minHeight: spx(26),
+						minWidth: 26,
+						minHeight: 26,
 						expandBehaviorH: SizeFlags.ShrinkBegin,
 						expandBehaviorV: SizeFlags.ShrinkBegin,
 					}}

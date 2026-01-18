@@ -27,4 +27,11 @@ namespace Spectral.React {
 		public void callTransitionEnd();
     }
 
+	public interface IEventHandlerStore
+	{
+		bool TryGetEventHandler(string key, out Delegate handler);
+		void SetEventHandler(string key, Delegate handler);
+		void RemoveEventHandler(string key);
+	}
+
 }

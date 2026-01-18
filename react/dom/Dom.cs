@@ -6,7 +6,7 @@ using Microsoft.ClearScript;
 
 namespace Spectral.React
 {
-    public partial class DomNode<T> : IAnimatedDom
+    public partial class DomNode<T> : IAnimatedDom, IEventHandlerStore
         where T : Node, new()
     {
         protected Document _document;
@@ -22,6 +22,8 @@ namespace Spectral.React
         protected ScriptObject _style = null;
         protected ScriptObject _classStyles = null;
         protected string _classes;
+
+        readonly Dictionary<string, Delegate> _eventHandlers = new Dictionary<string, Delegate>();
 
         public ScriptObject style
         {
@@ -367,6 +369,25 @@ namespace Spectral.React
 
         dynamic _transitionRun = null;
         dynamic _transitionEnd = null;
+
+        public bool TryGetEventHandler(string key, out Delegate handler)
+        {
+            return _eventHandlers.TryGetValue(key, out handler);
+        }
+
+        public void SetEventHandler(string key, Delegate handler)
+        {
+            if (string.IsNullOrEmpty(key))
+                return;
+            _eventHandlers[key] = handler;
+        }
+
+        public void RemoveEventHandler(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+                return;
+            _eventHandlers.Remove(key);
+        }
 
         public void setTransitionRunEvent(dynamic callback)
         {

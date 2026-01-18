@@ -270,15 +270,30 @@ namespace Spectral.Demo
 
 			switch (type)
 			{
+				case "fortnite/slot_prev":
+				{
+					var maxSlots = Math.Max(1, DemoSlotCount);
+					SlotIndex = (SlotIndex - 1 + maxSlots) % maxSlots;
+					_dirty = true;
+					break;
+				}
+				case "fortnite/slot_next":
+				{
+					var maxSlots = Math.Max(1, DemoSlotCount);
+					SlotIndex = (SlotIndex + 1) % maxSlots;
+					_dirty = true;
+					break;
+				}
 				case "fortnite/set_slot_index":
 				{
 					if (payload == null)
-						return;
+						break;
 
 					try
 					{
 						var index = Convert.ToInt32(payload.GetProperty("index"));
-						SlotIndex = Mathf.Clamp(index, 0, 5);
+						var maxSlots = Math.Max(1, DemoSlotCount);
+						SlotIndex = Mathf.Clamp(index, 0, maxSlots - 1);
 						_dirty = true;
 					}
 					catch (Exception)
@@ -290,7 +305,7 @@ namespace Spectral.Demo
 				case "fortnite/set_health":
 				{
 					if (payload == null)
-						return;
+						break;
 
 					try
 					{
@@ -308,7 +323,7 @@ namespace Spectral.Demo
 				case "fortnite/set_shield":
 				{
 					if (payload == null)
-						return;
+						break;
 
 					try
 					{

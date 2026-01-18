@@ -438,6 +438,9 @@ namespace Spectral.React
 				case "control":
 					newNode = new ControlNode();
 					break;
+				case "uiroot":
+					newNode = new UiRootNode();
+					break;
 				case "div":
 					var wantsPanel = C.TryGetStyleProps(props, "backgroundStyle", out object hasBackground);
 					if (

@@ -14,13 +14,7 @@ const createFlatStyleBox = (bgColor: string) => {
 	return sb
 }
 
-export interface CharacterStatsProps {
-	scale?: number
-}
-
-export const CharacterStats = ({ scale = 1 }: CharacterStatsProps) => {
-	const spx = (px: number) => Math.round(px * scale)
-
+export const CharacterStats = () => {
 	const fortnite = useBridgeState((s: any) => s?.fortnite)
 	const health = typeof fortnite?.health === "number" ? fortnite.health : 0
 	const maxHealth = typeof fortnite?.maxHealth === "number" ? fortnite.maxHealth : 0
@@ -28,7 +22,7 @@ export const CharacterStats = ({ scale = 1 }: CharacterStatsProps) => {
 	const maxShield = typeof fortnite?.maxShield === "number" ? fortnite.maxShield : 0
 	const ammo = typeof fortnite?.ammo === "number" ? fortnite.ammo : 0
 
-	const barWidth = spx(356)
+	const barWidth = 356
 	const shieldFrac = clamp01(maxShield > 0 ? shield / maxShield : 0)
 	const shieldFillWidth = Math.round(barWidth * shieldFrac)
 	const healthFrac = clamp01(maxHealth > 0 ? health / maxHealth : 0)
@@ -37,14 +31,14 @@ export const CharacterStats = ({ scale = 1 }: CharacterStatsProps) => {
 	const styles = useMemo(() => {
 		const panel = createFlatStyleBox("#00000066")
 		if (panel) {
-			panel.CornerRadiusTopLeft = spx(8)
-			panel.CornerRadiusTopRight = spx(8)
-			panel.CornerRadiusBottomLeft = spx(8)
-			panel.CornerRadiusBottomRight = spx(8)
-			panel.ContentMarginLeft = spx(10)
-			panel.ContentMarginRight = spx(10)
-			panel.ContentMarginTop = spx(10)
-			panel.ContentMarginBottom = spx(10)
+			panel.CornerRadiusTopLeft = 8
+			panel.CornerRadiusTopRight = 8
+			panel.CornerRadiusBottomLeft = 8
+			panel.CornerRadiusBottomRight = 8
+			panel.ContentMarginLeft = 10
+			panel.ContentMarginRight = 10
+			panel.ContentMarginTop = 10
+			panel.ContentMarginBottom = 10
 		}
 
 		return {
@@ -53,7 +47,7 @@ export const CharacterStats = ({ scale = 1 }: CharacterStatsProps) => {
 			shieldFill: createFlatStyleBox("#00A0E6FF"),
 			healthFill: createFlatStyleBox("#48E025FF"),
 		}
-	}, [scale])
+	}, [])
 
 	return (
 		<div
@@ -63,10 +57,10 @@ export const CharacterStats = ({ scale = 1 }: CharacterStatsProps) => {
 				anchorRight: 0,
 				anchorTop: 1,
 				anchorBottom: 1,
-				offsetLeft: spx(80),
-				offsetRight: spx(80) + spx(580),
-				offsetTop: -spx(80) - spx(80),
-				offsetBottom: -spx(80),
+				offsetLeft: 80,
+				offsetRight: 80 + 580,
+				offsetTop: -80 - 80,
+				offsetBottom: -80,
 				growHorizontal: GrowDirection.Begin,
 				growVertical: GrowDirection.Begin,
 				zIndex: 10,
@@ -76,23 +70,23 @@ export const CharacterStats = ({ scale = 1 }: CharacterStatsProps) => {
 				style={{
 					expandBehaviorH: SizeFlags.ExpandFill,
 					expandBehaviorV: SizeFlags.ExpandFill,
-					separation: spx(12),
+					separation: 12,
 				}}
 			>
 				<vbox
 					style={{
 						expandBehaviorH: SizeFlags.ExpandFill,
 						expandBehaviorV: SizeFlags.ExpandFill,
-						separation: spx(6),
+						separation: 6,
 					}}
 				>
 					{/* Shield row */}
 					<hbox
-						style={{ separation: spx(8), expandBehaviorH: SizeFlags.ExpandFill }}
+						style={{ separation: 8, expandBehaviorH: SizeFlags.ExpandFill }}
 					>
 						<label
 							class="rpgawesome text-white text-xl"
-							style={{ minWidth: spx(40) }}
+							style={{ minWidth: 40 }}
 						>
 							{"\uEAE0"}
 						</label>
@@ -101,7 +95,7 @@ export const CharacterStats = ({ scale = 1 }: CharacterStatsProps) => {
 							style={{
 								backgroundStyle: styles.barBg ?? "res://assets/panel.tres",
 								minWidth: barWidth,
-								minHeight: spx(18),
+								minHeight: 18,
 								expandBehaviorH: SizeFlags.ShrinkBegin,
 							}}
 						>
@@ -110,7 +104,7 @@ export const CharacterStats = ({ scale = 1 }: CharacterStatsProps) => {
 									style={{
 										backgroundStyle: styles.shieldFill ?? "res://assets/panel.tres",
 										minWidth: shieldFillWidth,
-										minHeight: spx(18),
+										minHeight: 18,
 										expandBehaviorH: SizeFlags.ShrinkBegin,
 										expandBehaviorV: SizeFlags.ExpandFill,
 									}}
@@ -119,20 +113,20 @@ export const CharacterStats = ({ scale = 1 }: CharacterStatsProps) => {
 							</hbox>
 						</div>
 
-						<label class="text-white text-xl" style={{ minWidth: spx(50) }}>
+						<label class="text-white text-xl" style={{ minWidth: 50 }}>
 							{Math.round(shield)}
 						</label>
 					</hbox>
 
-					<control style={{ minHeight: spx(6) }} />
+					<control style={{ minHeight: 6 }} />
 
 					{/* Health row */}
 					<hbox
-						style={{ separation: spx(8), expandBehaviorH: SizeFlags.ExpandFill }}
+						style={{ separation: 8, expandBehaviorH: SizeFlags.ExpandFill }}
 					>
 						<label
 							class="rpgawesome text-white text-xl"
-							style={{ minWidth: spx(40) }}
+							style={{ minWidth: 40 }}
 						>
 							{"\uE9F5"}
 						</label>
@@ -141,7 +135,7 @@ export const CharacterStats = ({ scale = 1 }: CharacterStatsProps) => {
 							style={{
 								backgroundStyle: styles.barBg ?? "res://assets/panel.tres",
 								minWidth: barWidth,
-								minHeight: spx(28),
+								minHeight: 28,
 								expandBehaviorH: SizeFlags.ShrinkBegin,
 							}}
 						>
@@ -150,7 +144,7 @@ export const CharacterStats = ({ scale = 1 }: CharacterStatsProps) => {
 									style={{
 										backgroundStyle: styles.healthFill ?? "res://assets/panel.tres",
 										minWidth: healthFillWidth,
-										minHeight: spx(28),
+										minHeight: 28,
 										expandBehaviorH: SizeFlags.ShrinkBegin,
 										expandBehaviorV: SizeFlags.ExpandFill,
 										transitions: [AnimatableNode.MinWidth],
@@ -161,7 +155,7 @@ export const CharacterStats = ({ scale = 1 }: CharacterStatsProps) => {
 							</hbox>
 						</div>
 
-						<label class="text-white text-xl" style={{ minWidth: spx(50) }}>
+						<label class="text-white text-xl" style={{ minWidth: 50 }}>
 							{Math.round(health)}
 						</label>
 					</hbox>
@@ -170,18 +164,17 @@ export const CharacterStats = ({ scale = 1 }: CharacterStatsProps) => {
 				{/* Right block */}
 				<hbox
 					style={{
-						minWidth: spx(116),
-						separation: spx(8),
+						minWidth: 116,
+						separation: 8,
 						expandBehaviorV: SizeFlags.ExpandFill,
 					}}
 				>
 					<label
-						class="rpgawesome text-[#89FFFF]"
-						style={{ fontSize: spx(60) }}
+						class="rpgawesome text-[#89FFFF] text-6xl"
 					>
 						{"\uE9C1"}
 					</label>
-					<label class="text-white" style={{ fontSize: spx(30) }}>
+					<label class="text-white text-3xl">
 						{Math.round(ammo)}
 					</label>
 				</hbox>
