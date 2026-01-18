@@ -1,13 +1,12 @@
-import React, { useMemo } from "react"
+import React, { useCallback } from "react"
 import {
 	AlignmentMode,
-	GrowDirection,
 	LayoutPreset,
 	MouseFilterEnum,
 	SizeFlags,
 	StretchModeEnum,
 } from "gd"
-import { dispatch, useBridgeState } from "bridge"
+import { dispatch, useBridgeEvents, useBridgeState } from "bridge"
 
 enum Rarity {
 	Common,
@@ -24,15 +23,6 @@ const ITEM_TEXTURES: Record<string, Texture2D> = {
 	mk7: GD.Load<Texture2D>("res://assets/@fortnite-sample/mk7.png"),
 	drum: GD.Load<Texture2D>("res://assets/@fortnite-sample/drum.png"),
 	splash: GD.Load<Texture2D>("res://assets/@fortnite-sample/splash.png"),
-}
-
-const createFlatStyleBox = (bgColor: string) => {
-	const StyleBoxFlatCtor = (globalThis as any).StyleBoxFlat
-	if (!StyleBoxFlatCtor) return null
-
-	const sb = new StyleBoxFlatCtor()
-	sb.BgColor = new Color(bgColor)
-	return sb
 }
 
 export interface ActionBarProps {
@@ -63,52 +53,9 @@ const Slot = ({
 
 	const iconGap = selected ? 18 : 6
 
-	const styles = useMemo(() => {
-		const rarityColor = RARITY_COLORS[rarity] ?? RARITY_COLORS[Rarity.Common]
-
-		const icon = itemName ? createFlatStyleBox(rarityColor) : createFlatStyleBox("#00000000")
-		if (icon) {
-			icon.CornerRadiusTopLeft = 6
-			icon.CornerRadiusTopRight = 6
-			icon.CornerRadiusBottomLeft = 6
-			icon.CornerRadiusBottomRight = 6
-
-			if (itemName) {
-				if (selected) {
-					icon.BorderColor = new Color("#FFFFFFFF")
-					icon.BorderWidthLeft = 2
-					icon.BorderWidthTop = 2
-					icon.BorderWidthRight = 2
-					icon.BorderWidthBottom = 2
-				}
-			} else {
-				icon.BorderColor = new Color("#FFFFFF80")
-				icon.BorderWidthLeft = 1
-				icon.BorderWidthTop = 1
-				icon.BorderWidthRight = 1
-				icon.BorderWidthBottom = 1
-			}
-		}
-
-		const key = createFlatStyleBox("#00000080")
-		if (key) {
-			key.CornerRadiusTopLeft = 4
-			key.CornerRadiusTopRight = 4
-			key.CornerRadiusBottomLeft = 4
-			key.CornerRadiusBottomRight = 4
-			key.BorderColor = new Color("#FFFFFF4D")
-			key.BorderWidthLeft = 1
-			key.BorderWidthTop = 1
-			key.BorderWidthRight = 1
-			key.BorderWidthBottom = 1
-			key.ContentMarginLeft = 6
-			key.ContentMarginRight = 6
-			key.ContentMarginTop = 2
-			key.ContentMarginBottom = 2
-		}
-
-		return { icon, key }
-	}, [itemName, rarity, selected])
+	const rarityColor = RARITY_COLORS[rarity] ?? RARITY_COLORS[Rarity.Common]
+	const iconBorderWidth = itemName ? (selected ? 2 : 0) : 1
+	const iconBorderColor = itemName ? (selected ? "#FFFFFFFF" : "#00000000") : "#FFFFFF80"
 
 	const tex = itemName ? ITEM_TEXTURES[itemName] : null
 
@@ -131,7 +78,10 @@ const Slot = ({
 						onClick={handleSelect}
 						onGuiInput={onGuiInput}
 						style={{
-							backgroundStyle: styles.icon ?? "res://assets/panel.tres",
+							bgColor: itemName ? rarityColor : "#00000000",
+							cornerRadius: 6,
+							borderWidth: iconBorderWidth,
+							borderColor: iconBorderColor,
 							minWidth: iconSize,
 							minHeight: iconSize,
 						}}
@@ -151,7 +101,16 @@ const Slot = ({
 					<div
 						onClick={handleSelect}
 						onGuiInput={onGuiInput}
-						style={{ backgroundStyle: styles.key ?? "res://assets/panel.tres" }}
+						style={{
+							bgColor: "#00000080",
+							cornerRadius: 4,
+							borderWidth: 1,
+							borderColor: "#FFFFFF4D",
+							paddingLeft: 6,
+							paddingRight: 6,
+							paddingTop: 2,
+							paddingBottom: 2,
+						}}
 					>
 						<label class="text-white text-xs">{char}</label>
 					</div>
@@ -166,9 +125,29 @@ export const ActionBar = (_props: ActionBarProps) => {
 		return typeof idx === "number" ? idx : 0
 	})
 
-	const selectSlot = (index: number) => {
+	const selectSlot = useCallback((index: number) => {
 		dispatch({ type: "fortnite/set_slot_index", payload: { index } })
-	}
+	}, [])
+
+	useBridgeEvents(
+		useCallback(
+			(ev) => {
+				if (ev.type !== "input/key_down") return
+				if (ev.payload?.echo) return
+
+				const key = String(ev.payload?.key ?? "").toLowerCase()
+				if (!key) return
+
+				if (key === "f") return selectSlot(0)
+				if (key === "1") return selectSlot(1)
+				if (key === "2") return selectSlot(2)
+				if (key === "3") return selectSlot(3)
+				if (key === "4") return selectSlot(4)
+				if (key === "5") return selectSlot(5)
+			},
+			[selectSlot]
+		)
+	)
 
 	const handleGuiInput = (ev: any) => {
 		const pressed = Boolean(ev?.Pressed)
@@ -184,21 +163,9 @@ export const ActionBar = (_props: ActionBarProps) => {
 
 	return (
 		<hbox
-			alignment={AlignmentMode.End}
+			class="absolute bottom-20 right-4 w-[520px] h-[120px] justify-between z-20"
 			style={{
-				anchorLeft: 1,
-				anchorRight: 1,
-				anchorTop: 1,
-				anchorBottom: 1,
-				offsetRight: -16,
-				offsetLeft: -16 - 520,
-				offsetBottom: -80,
-				offsetTop: -80 - 120,
-				growHorizontal: GrowDirection.Begin,
-				growVertical: GrowDirection.Begin,
-				separation: 8,
 				mouseFilter: MouseFilterEnum.Stop,
-				zIndex: 20,
 			}}
 		>
 			<Slot

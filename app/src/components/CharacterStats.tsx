@@ -1,18 +1,9 @@
 import { AnimatableNode } from "enums"
 import { GrowDirection, SizeFlags } from "gd"
-import React, { useMemo } from "react"
+import React from "react"
 import { useBridgeState } from "bridge"
 
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v))
-
-const createFlatStyleBox = (bgColor: string) => {
-	const StyleBoxFlatCtor = (globalThis as any).StyleBoxFlat
-	if (!StyleBoxFlatCtor) return null
-
-	const sb = new StyleBoxFlatCtor()
-	sb.BgColor = new Color(bgColor)
-	return sb
-}
 
 export const CharacterStats = () => {
 	const fortnite = useBridgeState((s: any) => s?.fortnite)
@@ -28,61 +19,28 @@ export const CharacterStats = () => {
 	const healthFrac = clamp01(maxHealth > 0 ? health / maxHealth : 0)
 	const healthFillWidth = Math.round(barWidth * healthFrac)
 
-	const styles = useMemo(() => {
-		const panel = createFlatStyleBox("#00000066")
-		if (panel) {
-			panel.CornerRadiusTopLeft = 8
-			panel.CornerRadiusTopRight = 8
-			panel.CornerRadiusBottomLeft = 8
-			panel.CornerRadiusBottomRight = 8
-			panel.ContentMarginLeft = 10
-			panel.ContentMarginRight = 10
-			panel.ContentMarginTop = 10
-			panel.ContentMarginBottom = 10
-		}
-
-		return {
-			panel,
-			barBg: createFlatStyleBox("#00000066"),
-			shieldFill: createFlatStyleBox("#00A0E6FF"),
-			healthFill: createFlatStyleBox("#48E025FF"),
-		}
-	}, [])
-
 	return (
 		<div
-			style={{
-				backgroundStyle: styles.panel ?? "res://assets/panel.tres",
-				anchorLeft: 0,
-				anchorRight: 0,
-				anchorTop: 1,
-				anchorBottom: 1,
-				offsetLeft: 80,
-				offsetRight: 80 + 580,
-				offsetTop: -80 - 80,
-				offsetBottom: -80,
-				growHorizontal: GrowDirection.Begin,
-				growVertical: GrowDirection.Begin,
-				zIndex: 10,
-			}}
+			class="absolute left-20 bottom-20 w-[580px] h-[80px] bg-black/40 rounded-lg p-3 z-10"
 		>
 			<hbox
+				class="gap-3"
 				style={{
 					expandBehaviorH: SizeFlags.ExpandFill,
 					expandBehaviorV: SizeFlags.ExpandFill,
-					separation: 12,
 				}}
 			>
 				<vbox
+					class="gap-1.5"
 					style={{
 						expandBehaviorH: SizeFlags.ExpandFill,
 						expandBehaviorV: SizeFlags.ExpandFill,
-						separation: 6,
 					}}
 				>
 					{/* Shield row */}
 					<hbox
-						style={{ separation: 8, expandBehaviorH: SizeFlags.ExpandFill }}
+						class="gap-2"
+						style={{ expandBehaviorH: SizeFlags.ExpandFill }}
 					>
 						<label
 							class="rpgawesome text-white text-xl"
@@ -92,8 +50,8 @@ export const CharacterStats = () => {
 						</label>
 
 						<div
+							class="bg-black/40"
 							style={{
-								backgroundStyle: styles.barBg ?? "res://assets/panel.tres",
 								minWidth: barWidth,
 								minHeight: 18,
 								expandBehaviorH: SizeFlags.ShrinkBegin,
@@ -101,8 +59,8 @@ export const CharacterStats = () => {
 						>
 							<hbox style={{ expandBehaviorH: SizeFlags.ExpandFill }}>
 								<div
+									class="bg-[#00A0E6]"
 									style={{
-										backgroundStyle: styles.shieldFill ?? "res://assets/panel.tres",
 										minWidth: shieldFillWidth,
 										minHeight: 18,
 										expandBehaviorH: SizeFlags.ShrinkBegin,
@@ -122,7 +80,8 @@ export const CharacterStats = () => {
 
 					{/* Health row */}
 					<hbox
-						style={{ separation: 8, expandBehaviorH: SizeFlags.ExpandFill }}
+						class="gap-2"
+						style={{ expandBehaviorH: SizeFlags.ExpandFill }}
 					>
 						<label
 							class="rpgawesome text-white text-xl"
@@ -132,8 +91,8 @@ export const CharacterStats = () => {
 						</label>
 
 						<div
+							class="bg-black/40"
 							style={{
-								backgroundStyle: styles.barBg ?? "res://assets/panel.tres",
 								minWidth: barWidth,
 								minHeight: 28,
 								expandBehaviorH: SizeFlags.ShrinkBegin,
@@ -141,8 +100,8 @@ export const CharacterStats = () => {
 						>
 							<hbox style={{ expandBehaviorH: SizeFlags.ExpandFill }}>
 								<div
+									class="bg-[#48E025]"
 									style={{
-										backgroundStyle: styles.healthFill ?? "res://assets/panel.tres",
 										minWidth: healthFillWidth,
 										minHeight: 28,
 										expandBehaviorH: SizeFlags.ShrinkBegin,
@@ -163,9 +122,9 @@ export const CharacterStats = () => {
 
 				{/* Right block */}
 				<hbox
+					class="gap-2"
 					style={{
 						minWidth: 116,
-						separation: 8,
 						expandBehaviorV: SizeFlags.ExpandFill,
 					}}
 				>

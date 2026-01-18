@@ -1,10 +1,13 @@
-import { useSyncExternalStore } from "react"
+import { useEffect, useSyncExternalStore } from "react"
 
 type Listener = () => void
+export type BridgeEvent = { type: string; payload: any }
+type EventListener = (event: BridgeEvent) => void
 
 const getBridge = () => (globalThis as any).bridge as ReactBridge
 
 const listeners = new Set<Listener>()
+const eventListeners = new Set<EventListener>()
 let rafId: number | null = null
 let lastVersion = -1
 
@@ -15,23 +18,46 @@ const tick = () => {
 	if (version === lastVersion) return
 	lastVersion = version
 
+	if (eventListeners.size) {
+		for (const ev of drainEvents()) {
+			for (const listener of eventListeners) listener(ev)
+		}
+	}
+
 	for (const listener of listeners) listener()
+}
+
+const ensureTicking = () => {
+	if (rafId !== null) return
+	lastVersion = getBridge().version
+	rafId = requestAnimationFrame(tick)
+}
+
+const maybeStopTicking = () => {
+	if (listeners.size > 0) return
+	if (eventListeners.size > 0) return
+	if (rafId === null) return
+	cancelAnimationFrame(rafId)
+	rafId = null
 }
 
 export const subscribe = (listener: Listener) => {
 	listeners.add(listener)
-
-	if (rafId === null) {
-		lastVersion = getBridge().version
-		rafId = requestAnimationFrame(tick)
-	}
+	ensureTicking()
 
 	return () => {
 		listeners.delete(listener)
-		if (listeners.size === 0 && rafId !== null) {
-			cancelAnimationFrame(rafId)
-			rafId = null
-		}
+		maybeStopTicking()
+	}
+}
+
+export const subscribeEvents = (listener: EventListener) => {
+	eventListeners.add(listener)
+	ensureTicking()
+
+	return () => {
+		eventListeners.delete(listener)
+		maybeStopTicking()
 	}
 }
 
@@ -62,9 +88,9 @@ export const dispatch = (action: { type: string; payload?: any }) => {
 	getBridge().dispatch(action as any)
 }
 
-export const drainEvents = (): Array<{ type: string; payload: any }> => {
+export const drainEvents = (): BridgeEvent[] => {
 	const events = getBridge().drainEvents() as unknown as string[]
-	const parsed: Array<{ type: string; payload: any }> = []
+	const parsed: BridgeEvent[] = []
 	for (const json of events) {
 		try {
 			parsed.push(JSON.parse(json))
@@ -75,3 +101,6 @@ export const drainEvents = (): Array<{ type: string; payload: any }> => {
 	return parsed
 }
 
+export const useBridgeEvents = (handler: EventListener) => {
+	useEffect(() => subscribeEvents(handler), [handler])
+}

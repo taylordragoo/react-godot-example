@@ -31,6 +31,17 @@ const normalizeHexColor = (value: string): string | null => {
 	return null
 }
 
+const parseArbitraryPx = (token: string): number | null => {
+	if (!token) return null
+	if (!token.startsWith("[") || !token.endsWith("]")) return null
+
+	const inner = token.slice(1, -1).trim()
+	const px = inner.endsWith("px") ? inner.slice(0, -2) : inner
+	const n = Number(px)
+	if (!Number.isFinite(n)) return null
+	return n
+}
+
 const PALETTE: Record<string, Record<string, string>> = {
 	slate: {
 		"50": "#f8fafc",
@@ -63,6 +74,20 @@ const PALETTE: Record<string, Record<string, string>> = {
 const parseTailwindColor = (token: string): string | null => {
 	if (!token) return null
 
+	const slashIndex = token.lastIndexOf("/")
+	if (slashIndex > 0) {
+		const baseToken = token.slice(0, slashIndex)
+		const alphaToken = token.slice(slashIndex + 1)
+		const pct = Number(alphaToken)
+		if (!Number.isFinite(pct)) return null
+
+		const base = parseTailwindColor(baseToken)
+		if (!base) return null
+
+		const a = hexByte((clamp(pct, 0, 100) / 100) * 255)
+		return base.length === 9 ? `${base.slice(0, 7)}${a}` : base
+	}
+
 	if (token === "white") return "#FFFFFFFF"
 	if (token === "black") return "#000000FF"
 	if (token === "transparent") return "#00000000"
@@ -93,6 +118,12 @@ const SPACING_PX = (value: string): number | null => {
 	const n = Number(value)
 	if (!Number.isFinite(n)) return null
 	return n * 4
+}
+
+const parseSpacingPx = (token: string): number | null => {
+	if (!token) return null
+	if (token.startsWith("[") && token.endsWith("]")) return parseArbitraryPx(token)
+	return SPACING_PX(token)
 }
 
 const TEXT_SIZES_PX: Record<string, number> = {
@@ -127,9 +158,79 @@ const createFlatBackgroundStyleBox = (color: string) => {
 export const compileClassToken = (className: string): StyleObject | null => {
 	if (!className) return null
 
+	const negative = className.startsWith("-")
+	if (negative) className = className.slice(1)
+
 	if (className === "hidden") return { visible: false }
 	if (className === "block" || className === "flex" || className === "inline")
 		return { visible: true }
+
+	if (className === "absolute") return { position: "absolute" }
+	if (className === "relative") return { position: "relative" }
+
+	if (className === "flex") return { display: "flex" }
+	if (className === "flex-row") return { flexDirection: "row" }
+	if (className === "flex-col") return { flexDirection: "column" }
+
+	if (className.startsWith("justify-")) {
+		const token = className.slice("justify-".length)
+		if (token === "start") return { justifyContent: "start" }
+		if (token === "center") return { justifyContent: "center" }
+		if (token === "end") return { justifyContent: "end" }
+		if (token === "between") return { justifyContent: "between" }
+		return null
+	}
+
+	if (className.startsWith("items-")) {
+		const token = className.slice("items-".length)
+		if (token === "start") return { alignItems: "start" }
+		if (token === "center") return { alignItems: "center" }
+		if (token === "end") return { alignItems: "end" }
+		if (token === "stretch") return { alignItems: "stretch" }
+		return null
+	}
+
+	if (className === "overflow-hidden") return { clipContents: true }
+	if (className === "overflow-visible") return { clipContents: false }
+
+	if (className.startsWith("inset-x-")) {
+		const px = parseSpacingPx(className.slice("inset-x-".length))
+		if (px === null) return null
+		const v = negative ? -px : px
+		return { left: v, right: v }
+	}
+	if (className.startsWith("inset-y-")) {
+		const px = parseSpacingPx(className.slice("inset-y-".length))
+		if (px === null) return null
+		const v = negative ? -px : px
+		return { top: v, bottom: v }
+	}
+	if (className.startsWith("inset-")) {
+		const px = parseSpacingPx(className.slice("inset-".length))
+		if (px === null) return null
+		const v = negative ? -px : px
+		return { top: v, right: v, bottom: v, left: v }
+	}
+	if (className.startsWith("top-")) {
+		const px = parseSpacingPx(className.slice("top-".length))
+		if (px === null) return null
+		return { top: negative ? -px : px }
+	}
+	if (className.startsWith("right-")) {
+		const px = parseSpacingPx(className.slice("right-".length))
+		if (px === null) return null
+		return { right: negative ? -px : px }
+	}
+	if (className.startsWith("bottom-")) {
+		const px = parseSpacingPx(className.slice("bottom-".length))
+		if (px === null) return null
+		return { bottom: negative ? -px : px }
+	}
+	if (className.startsWith("left-")) {
+		const px = parseSpacingPx(className.slice("left-".length))
+		if (px === null) return null
+		return { left: negative ? -px : px }
+	}
 
 	if (className.startsWith("opacity-")) {
 		const raw = className.slice("opacity-".length)
@@ -152,47 +253,84 @@ export const compileClassToken = (className: string): StyleObject | null => {
 	if (className.startsWith("bg-")) {
 		const token = className.slice("bg-".length)
 		const color = parseTailwindColor(token)
-		if (!color) return null
-
-		const sb = createFlatBackgroundStyleBox(color)
-		if (!sb) return null
-		return { backgroundStyle: sb }
+		if (color) return { bgColor: color }
+		return null
 	}
 
 	if (className.startsWith("p-")) {
 		const px = SPACING_PX(className.slice("p-".length))
 		if (px === null) return null
-		return { margin: px }
+		return { padding: px }
 	}
 	if (className.startsWith("px-")) {
 		const px = SPACING_PX(className.slice("px-".length))
 		if (px === null) return null
-		return { marginLeft: px, marginRight: px }
+		return { paddingLeft: px, paddingRight: px }
 	}
 	if (className.startsWith("py-")) {
 		const px = SPACING_PX(className.slice("py-".length))
 		if (px === null) return null
-		return { marginTop: px, marginBottom: px }
+		return { paddingTop: px, paddingBottom: px }
 	}
 	if (className.startsWith("pt-")) {
 		const px = SPACING_PX(className.slice("pt-".length))
 		if (px === null) return null
-		return { marginTop: px }
+		return { paddingTop: px }
 	}
 	if (className.startsWith("pr-")) {
 		const px = SPACING_PX(className.slice("pr-".length))
 		if (px === null) return null
-		return { marginRight: px }
+		return { paddingRight: px }
 	}
 	if (className.startsWith("pb-")) {
 		const px = SPACING_PX(className.slice("pb-".length))
 		if (px === null) return null
-		return { marginBottom: px }
+		return { paddingBottom: px }
 	}
 	if (className.startsWith("pl-")) {
 		const px = SPACING_PX(className.slice("pl-".length))
 		if (px === null) return null
-		return { marginLeft: px }
+		return { paddingLeft: px }
+	}
+
+	if (className === "rounded") return { cornerRadius: 4 }
+	if (className.startsWith("rounded-")) {
+		const token = className.slice("rounded-".length)
+		if (token === "none") return { cornerRadius: 0 }
+		if (token === "sm") return { cornerRadius: 2 }
+		if (token === "md") return { cornerRadius: 6 }
+		if (token === "lg") return { cornerRadius: 8 }
+		if (token === "xl") return { cornerRadius: 12 }
+		if (token === "2xl") return { cornerRadius: 16 }
+		if (token === "3xl") return { cornerRadius: 24 }
+		if (token === "full") return { cornerRadius: 9999 }
+
+		if (token.startsWith("[") && token.endsWith("]")) {
+			const inner = token.slice(1, -1).trim()
+			const px = inner.endsWith("px") ? Number(inner.slice(0, -2)) : Number(inner)
+			if (!Number.isFinite(px)) return null
+			return { cornerRadius: px }
+		}
+		return null
+	}
+
+	if (className === "border") return { borderWidth: 1 }
+	if (className.startsWith("border-")) {
+		const token = className.slice("border-".length)
+
+		if (token.startsWith("[") && token.endsWith("]")) {
+			const inner = token.slice(1, -1).trim()
+			const px = inner.endsWith("px") ? Number(inner.slice(0, -2)) : Number(inner)
+			if (!Number.isFinite(px)) return null
+			return { borderWidth: px }
+		}
+
+		const n = Number(token)
+		if (Number.isFinite(n)) return { borderWidth: n }
+
+		const color = parseTailwindColor(token)
+		if (color) return { borderColor: color }
+		return null
 	}
 
 	if (className.startsWith("gap-")) {
@@ -227,12 +365,14 @@ export const compileClassToken = (className: string): StyleObject | null => {
 	}
 
 	if (className.startsWith("w-")) {
-		const px = SPACING_PX(className.slice("w-".length))
+		const token = className.slice("w-".length)
+		const px = token.startsWith("[") ? parseArbitraryPx(token) : SPACING_PX(token)
 		if (px === null) return null
 		return { minWidth: px }
 	}
 	if (className.startsWith("h-")) {
-		const px = SPACING_PX(className.slice("h-".length))
+		const token = className.slice("h-".length)
+		const px = token.startsWith("[") ? parseArbitraryPx(token) : SPACING_PX(token)
 		if (px === null) return null
 		return { minHeight: px }
 	}
@@ -258,4 +398,3 @@ export const initTailwind = (rootDocument: Document, initial: StyleSheet = {}) =
 	;(globalThis as any).__twGetClass = getClass
 	return initial
 }
-

@@ -197,7 +197,8 @@ namespace Spectral.React
                     @"
                         function getStyleObj() {
                             return {
-                                style: __newStyle
+                                style: __newStyle,
+                                __classUpdate: true
                             }
                         }
                         getStyleObj()

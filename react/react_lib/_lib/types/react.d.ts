@@ -33,6 +33,31 @@ interface NodeStyle {
 interface ControlStyle extends NodeStyle, AnimationStyle {
 	// rotation?: number
 
+	// Panel/StyleBox helpers (Tailwind-ish)
+	bgColor?: ColorType
+	borderColor?: ColorType
+	borderWidth?: number
+	cornerRadius?: number
+	padding?: number
+	paddingX?: number
+	paddingY?: number
+	paddingLeft?: number
+	paddingRight?: number
+	paddingTop?: number
+	paddingBottom?: number
+
+	// Positioning (Tailwind-ish)
+	position?: "absolute" | "relative"
+	top?: number
+	right?: number
+	bottom?: number
+	left?: number
+
+	// Layout hints for containers (Tailwind-ish)
+	flexDirection?: "row" | "column"
+	justifyContent?: "start" | "center" | "end" | "between"
+	alignItems?: "start" | "center" | "end" | "stretch"
+
 	focusMode?: FOCUS_MODE
 	// focusNeighborBottom?: string
 	// focusNeighborLeft?: string
@@ -227,13 +252,7 @@ interface FlowAttributes<T> extends ContainerAttributes<T> {
 }
 
 interface MarginAttributes<T> extends ContainerAttributes<T> {
-	style?: ControlStyle & {
-		marginBottom?: number
-		marginLeft?: number
-		marginTop?: number
-		marginBottom?: number
-		margin?: number
-	}
+	style?: ControlStyle
 }
 
 interface PanelAttributes<T> extends ContainerAttributes<T> {

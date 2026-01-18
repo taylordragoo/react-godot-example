@@ -20,6 +20,9 @@ namespace Spectral.React
 		[Export]
 		bool LiveReload = false;
 
+		[Export]
+		bool EmitInputEvents = true;
+
 		ScriptObject _styleSheet = null;
 
 		static Dictionary<string, Type> _customNodes = new();
@@ -38,6 +41,11 @@ namespace Spectral.React
 			}
 			Instance = this;
 			Setup();
+
+			if (EmitInputEvents)
+			{
+				SetProcessUnhandledInput(true);
+			}
 		}
 
 		public override void _ExitTree()
@@ -66,6 +74,37 @@ namespace Spectral.React
 			}
 			_engine = null;
 			_bridge = null;
+		}
+
+		public override void _UnhandledInput(InputEvent @event)
+		{
+			base._UnhandledInput(@event);
+
+			if (!EmitInputEvents || _bridge == null || @event == null)
+				return;
+
+			if (@event is InputEventKey keyEvent)
+			{
+				if (keyEvent.Echo)
+					return;
+
+				var type = keyEvent.Pressed ? "input/key_down" : "input/key_up";
+				_bridge.emit(
+					type,
+					new
+					{
+						key = OS.GetKeycodeString(keyEvent.Keycode),
+						keycode = (int)keyEvent.Keycode,
+						physicalKeycode = (int)keyEvent.PhysicalKeycode,
+						unicode = (int)keyEvent.Unicode,
+						pressed = keyEvent.Pressed,
+						shift = keyEvent.ShiftPressed,
+						ctrl = keyEvent.CtrlPressed,
+						alt = keyEvent.AltPressed,
+						meta = keyEvent.MetaPressed,
+					}
+				);
+			}
 		}
 
 		public ReactBridge Bridge => _bridge;
@@ -368,7 +407,18 @@ namespace Spectral.React
 
 			foreach (var token in classString.Split(' ', StringSplitOptions.RemoveEmptyEntries))
 			{
-				if (token.StartsWith("bg-"))
+				if (
+					token.StartsWith("bg-")
+					|| token.StartsWith("border")
+					|| token.StartsWith("rounded")
+					|| token.StartsWith("p-")
+					|| token.StartsWith("px-")
+					|| token.StartsWith("py-")
+					|| token.StartsWith("pt-")
+					|| token.StartsWith("pr-")
+					|| token.StartsWith("pb-")
+					|| token.StartsWith("pl-")
+				)
 				{
 					return true;
 				}
@@ -442,7 +492,19 @@ namespace Spectral.React
 					newNode = new UiRootNode();
 					break;
 				case "div":
-					var wantsPanel = C.TryGetStyleProps(props, "backgroundStyle", out object hasBackground);
+					var wantsPanel =
+						C.TryGetStyleProps(props, "backgroundStyle", out _)
+						|| C.TryGetStyleProps(props, "bgColor", out _)
+						|| C.TryGetStyleProps(props, "borderColor", out _)
+						|| C.TryGetStyleProps(props, "borderWidth", out _)
+						|| C.TryGetStyleProps(props, "cornerRadius", out _)
+						|| C.TryGetStyleProps(props, "padding", out _)
+						|| C.TryGetStyleProps(props, "paddingX", out _)
+						|| C.TryGetStyleProps(props, "paddingY", out _)
+						|| C.TryGetStyleProps(props, "paddingLeft", out _)
+						|| C.TryGetStyleProps(props, "paddingRight", out _)
+						|| C.TryGetStyleProps(props, "paddingTop", out _)
+						|| C.TryGetStyleProps(props, "paddingBottom", out _);
 					if (
 						!wantsPanel
 						&& C.TryGetProps(props, "class", out object classObj)

@@ -274,7 +274,89 @@ namespace Spectral.React
                     Convert.ToInt64(layoutDirection);
             }
             
+            InjectPositioningProps(instance, props);
             InjectAnchorProps(instance, prevProps, props);
+        }
+
+        static void InjectPositioningProps(Control instance, ScriptObject props)
+        {
+            var hasTop = C.TryGetStyleProps(props, "top", out object top);
+            var hasRight = C.TryGetStyleProps(props, "right", out object right);
+            var hasBottom = C.TryGetStyleProps(props, "bottom", out object bottom);
+            var hasLeft = C.TryGetStyleProps(props, "left", out object left);
+
+            if (!hasTop && !hasRight && !hasBottom && !hasLeft)
+            {
+                return;
+            }
+
+            float? width = null;
+            if (C.TryGetStyleProps(props, "width", out object widthObj))
+            {
+                width = Convert.ToSingle(widthObj);
+            }
+            else if (C.TryGetStyleProps(props, "minWidth", out object minWidthObj))
+            {
+                width = Convert.ToSingle(minWidthObj);
+            }
+
+            float? height = null;
+            if (C.TryGetStyleProps(props, "height", out object heightObj))
+            {
+                height = Convert.ToSingle(heightObj);
+            }
+            else if (C.TryGetStyleProps(props, "minHeight", out object minHeightObj))
+            {
+                height = Convert.ToSingle(minHeightObj);
+            }
+
+            if (hasLeft && hasRight)
+            {
+                instance.SetAnchor(Side.Left, 0);
+                instance.SetAnchor(Side.Right, 1);
+                instance.OffsetLeft = Convert.ToSingle(left);
+                instance.OffsetRight = -Convert.ToSingle(right);
+            }
+            else if (hasLeft)
+            {
+                var l = Convert.ToSingle(left);
+                instance.SetAnchor(Side.Left, 0);
+                instance.SetAnchor(Side.Right, 0);
+                instance.OffsetLeft = l;
+                instance.OffsetRight = l + (width ?? 0);
+            }
+            else if (hasRight)
+            {
+                var r = Convert.ToSingle(right);
+                instance.SetAnchor(Side.Left, 1);
+                instance.SetAnchor(Side.Right, 1);
+                instance.OffsetRight = -r;
+                instance.OffsetLeft = -r - (width ?? 0);
+            }
+
+            if (hasTop && hasBottom)
+            {
+                instance.SetAnchor(Side.Top, 0);
+                instance.SetAnchor(Side.Bottom, 1);
+                instance.OffsetTop = Convert.ToSingle(top);
+                instance.OffsetBottom = -Convert.ToSingle(bottom);
+            }
+            else if (hasTop)
+            {
+                var t = Convert.ToSingle(top);
+                instance.SetAnchor(Side.Top, 0);
+                instance.SetAnchor(Side.Bottom, 0);
+                instance.OffsetTop = t;
+                instance.OffsetBottom = t + (height ?? 0);
+            }
+            else if (hasBottom)
+            {
+                var b = Convert.ToSingle(bottom);
+                instance.SetAnchor(Side.Top, 1);
+                instance.SetAnchor(Side.Bottom, 1);
+                instance.OffsetBottom = -b;
+                instance.OffsetTop = -b - (height ?? 0);
+            }
         }
 
         protected static void InjectAnchorProps(

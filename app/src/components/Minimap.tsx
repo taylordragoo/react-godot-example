@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo, useRef } from "react"
+import React, { useEffect, useRef } from "react"
 import {
 	AlignmentMode,
-	GrowDirection,
 	LayoutPreset,
 	MouseFilterEnum,
 	SizeFlags,
@@ -10,15 +9,6 @@ import {
 import { useBridgeState } from "bridge"
 
 const MAP_TEX = GD.Load<Texture2D>("res://assets/@fortnite-sample/map.jpg")
-
-const createFlatStyleBox = (bgColor: string) => {
-	const StyleBoxFlatCtor = (globalThis as any).StyleBoxFlat
-	if (!StyleBoxFlatCtor) return null
-
-	const sb = new StyleBoxFlatCtor()
-	sb.BgColor = new Color(bgColor)
-	return sb
-}
 
 const easeInOutQuad = (t: number) =>
 	t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
@@ -36,21 +26,6 @@ export const Minimap = () => {
 				typeof fortnite?.eliminations === "number" ? fortnite.eliminations : 0,
 		}
 	})
-
-	const styles = useMemo(() => {
-		const panel = createFlatStyleBox("#D8CBB0FF")
-
-		const bubble = createFlatStyleBox("#0000004D")
-		if (bubble) {
-			const r = 13
-			bubble.CornerRadiusTopLeft = r
-			bubble.CornerRadiusTopRight = r
-			bubble.CornerRadiusBottomLeft = r
-			bubble.CornerRadiusBottomRight = r
-		}
-
-		return { panel, bubble }
-	}, [])
 
 	useEffect(() => {
 		const mapSize = 1400
@@ -116,27 +91,14 @@ export const Minimap = () => {
 
 	return (
 		<vbox
+			class="absolute top-4 right-4 w-[300px] h-[400px] gap-2 z-30"
 			style={{
-				anchorLeft: 1,
-				anchorRight: 1,
-				anchorTop: 0,
-				anchorBottom: 0,
-				offsetRight: -16,
-				offsetLeft: -16 - 300,
-				offsetTop: 16,
-				offsetBottom: 16 + 400,
-				growHorizontal: GrowDirection.Begin,
-				growVertical: GrowDirection.End,
-				separation: 8,
-				zIndex: 30,
+				mouseFilter: MouseFilterEnum.Ignore,
 			}}
 		>
 			<div
+				class="bg-[#D8CBB0] overflow-hidden w-[300px] h-[300px]"
 				style={{
-					backgroundStyle: styles.panel ?? "res://assets/panel.tres",
-					clipContents: true,
-					minWidth: 300,
-					minHeight: 300,
 					expandBehaviorH: SizeFlags.Fill,
 					expandBehaviorV: SizeFlags.ShrinkBegin,
 				}}
@@ -186,19 +148,17 @@ export const Minimap = () => {
 			</div>
 
 			<hbox
+				class="gap-1.5"
 				alignment={AlignmentMode.Center}
 				style={{
 					expandBehaviorH: SizeFlags.Fill,
 					expandBehaviorV: SizeFlags.ExpandFill,
-					separation: 6,
 					mouseFilter: MouseFilterEnum.Ignore,
 				}}
 			>
 				<div
+					class="bg-black/30 rounded-full w-[26px] h-[26px]"
 					style={{
-						backgroundStyle: styles.bubble ?? "res://assets/panel.tres",
-						minWidth: 26,
-						minHeight: 26,
 						expandBehaviorH: SizeFlags.ShrinkBegin,
 						expandBehaviorV: SizeFlags.ShrinkBegin,
 					}}
@@ -218,10 +178,8 @@ export const Minimap = () => {
 				<label class="text-white text-lg">{stormTime}</label>
 
 				<div
+					class="bg-black/30 rounded-full w-[26px] h-[26px]"
 					style={{
-						backgroundStyle: styles.bubble ?? "res://assets/panel.tres",
-						minWidth: 26,
-						minHeight: 26,
 						expandBehaviorH: SizeFlags.ShrinkBegin,
 						expandBehaviorV: SizeFlags.ShrinkBegin,
 					}}
@@ -240,10 +198,8 @@ export const Minimap = () => {
 				<label class="text-white text-lg">{playersLeft}</label>
 
 				<div
+					class="bg-black/30 rounded-full w-[26px] h-[26px]"
 					style={{
-						backgroundStyle: styles.bubble ?? "res://assets/panel.tres",
-						minWidth: 26,
-						minHeight: 26,
 						expandBehaviorH: SizeFlags.ShrinkBegin,
 						expandBehaviorV: SizeFlags.ShrinkBegin,
 					}}
